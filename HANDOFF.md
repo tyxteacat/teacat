@@ -63,8 +63,11 @@ alternative**, **GGUF**, **OpenAI-compatible**.
 - Local git identity: `Tyxen <tyxteacat@users.noreply.github.com>`
 - **Published:** `tyxteacat/teacat` is a public repository and `main` has been
   pushed.
-- **Release:** `v0.1.0` is published with six prebuilt binaries (Windows, Linux,
-  macOS × amd64, arm64) plus `checksums.txt`.
+- **Release:** `v0.2.0` is published with six prebuilt binaries (Windows,
+  Linux, macOS × amd64, arm64) plus `checksums.txt`. `v0.1.0` remains
+  available. The Windows installer fetches the latest release.
+- **Dashboard:** the embedded local UI is live at `http://127.0.0.1:11434/`
+  (or `/ui`) whenever `teacat serve` runs; `teacat ui` opens it.
 - **CI:** build, vet and tests pass on Windows, Linux and macOS runners; the
   cross-compile job passes as well.
 - **Windows installer:** `install.ps1` (one-liner in the README) downloads the
@@ -359,7 +362,7 @@ site/                     static landing page for GitHub Pages + SEO
 - Embeddings endpoint (`/api/embeddings`, `/v1/embeddings`)
 - Tool calling / function calling
 - Multi-model concurrent serving
-- Cut the next release with `git tag v0.1.1 && git push origin v0.1.1`; the
+- Cut the next release with `git tag v0.2.1 && git push origin v0.2.1`; the
   release workflow uploads the six prebuilt binaries automatically
 - Add screenshots/GIF to the README and landing page
 

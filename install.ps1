@@ -114,7 +114,8 @@ try {
     Write-Host "Try it:"
     Write-Host "  teacat pull qwen2.5:0.5b"
     Write-Host "  teacat run qwen2.5:0.5b `"Explain goroutines in two sentences`""
-    Write-Host "  teacat serve"
+    Write-Host "  teacat ui            # opens the dashboard in your browser"
+    Write-Host "  teacat serve         # API + dashboard on http://127.0.0.1:11434"
 } finally {
     Remove-Item -Force -ErrorAction SilentlyContinue $tempExe, $tempSums
 }
