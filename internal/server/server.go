@@ -18,6 +18,7 @@ import (
 	"github.com/tyxteacat/teacat/internal/sampler"
 	"github.com/tyxteacat/teacat/internal/store"
 	"github.com/tyxteacat/teacat/internal/tokenizer"
+	"github.com/tyxteacat/teacat/internal/webui"
 )
 
 // Server is the local inference daemon.
@@ -32,12 +33,16 @@ type Server struct {
 	model    *model.Model
 	manifest store.Manifest
 	loadedAt time.Time
+	started  time.Time
 }
 
 // Handler builds the HTTP mux.
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", s.handleRoot)
+	mux.Handle("/", webui.Handler())
+	mux.HandleFunc("/api", s.handleInfo)
+	mux.HandleFunc("/api/info", s.handleInfo)
+	mux.HandleFunc("/api/health", s.handleHealth)
 	mux.HandleFunc("/api/version", s.handleVersion)
 	mux.HandleFunc("/api/tags", s.handleTags)
 	mux.HandleFunc("/api/show", s.handleShow)
@@ -70,15 +75,41 @@ func (s *Server) logf(format string, args ...any) {
 	}
 }
 
-func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
+func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
+	models, _ := s.Store.List()
+	writeJSON(w, http.StatusOK, map[string]any{
+		"name":      brand.Name,
+		"tagline":   brand.Tagline,
+		"author":    brand.Author,
+		"version":   s.Version,
+		"repo":      brand.Repo,
+		"website":   brand.Website,
+		"dashboard": "/",
+		"models":    len(models),
+		"endpoints": map[string]string{
+			"ollama":        "/api",
+			"openai":        "/v1",
+			"chat":          "/api/chat",
+			"generate":      "/api/generate",
+			"tags":          "/api/tags",
+			"pull":          "/api/pull",
+			"delete":        "/api/delete",
+			"ps":            "/api/ps",
+			"openai_models": "/v1/models",
+		},
+	})
+}
+
+func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
+	uptime := int64(0)
+	if !s.started.IsZero() {
+		uptime = int64(time.Since(s.started).Seconds())
 	}
-	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
-	fmt.Fprintf(w, "%s is running.\n", brand.Name)
-	fmt.Fprintf(w, "%s\n%s\n\n", brand.Tagline, brand.Repo)
-	fmt.Fprint(w, "API:\n  GET  /api/tags\n  POST /api/chat\n  POST /api/generate\n  POST /v1/chat/completions\n")
+	writeJSON(w, http.StatusOK, map[string]any{
+		"status":         "ok",
+		"version":        s.Version,
+		"uptime_seconds": uptime,
+	})
 }
 
 func (s *Server) handleVersion(w http.ResponseWriter, r *http.Request) {
@@ -202,15 +233,15 @@ func (s *Server) handleShow(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
-		"name":       m.Ref(),
-		"model":      m.Ref(),
+		"name":        m.Ref(),
+		"model":       m.Ref(),
 		"modified_at": m.ModifiedAt.Format(time.RFC3339Nano),
-		"size":       m.Size,
-		"digest":     m.Digest,
-		"details":    map[string]any{"format": "gguf"},
-		"template":   m.Template,
-		"system":     m.System,
-		"parameters": m.Parameters,
+		"size":        m.Size,
+		"digest":      m.Digest,
+		"details":     map[string]any{"format": "gguf"},
+		"template":    m.Template,
+		"system":      m.System,
+		"parameters":  m.Parameters,
 	})
 }
 
@@ -454,13 +485,13 @@ func (s *Server) handleOpenAIModels(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleOpenAIChat(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		Model       string          `json:"model"`
-		Messages    []chatMessage   `json:"messages"`
-		Stream      bool            `json:"stream"`
-		MaxTokens   int             `json:"max_tokens"`
-		Temperature *float64        `json:"temperature"`
-		TopP        *float64        `json:"top_p"`
-		Stop        any             `json:"stop"`
+		Model       string        `json:"model"`
+		Messages    []chatMessage `json:"messages"`
+		Stream      bool          `json:"stream"`
+		MaxTokens   int           `json:"max_tokens"`
+		Temperature *float64      `json:"temperature"`
+		TopP        *float64      `json:"top_p"`
+		Stop        any           `json:"stop"`
 	}
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		writeError(w, http.StatusBadRequest, err)
@@ -668,6 +699,9 @@ func writeError(w http.ResponseWriter, status int, err error) {
 
 // Listen serves the API and blocks.
 func (s *Server) Listen(addr string) error {
+	if s.started.IsZero() {
+		s.started = time.Now()
+	}
 	httpServer := &http.Server{
 		Addr:              addr,
 		Handler:           s.Handler(),

@@ -7,7 +7,7 @@ abstract: >-
   and exposes Ollama-compatible and OpenAI-compatible HTTP APIs.
 authors:
   - name: Tyxen
-version: 0.1.0
+version: 0.2.0
 date-released: 2026-11-07
 url: "https://tyxteacat.github.io/teacat/"
 repository-code: "https://github.com/tyxteacat/teacat"

@@ -6,7 +6,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -32,6 +34,8 @@ func main() {
 	switch os.Args[1] {
 	case "serve":
 		err = cmdServe(os.Args[2:])
+	case "ui", "dashboard":
+		err = cmdServe(append([]string{"--open"}, os.Args[2:]...))
 	case "pull":
 		err = cmdPull(os.Args[2:])
 	case "list", "ls":
@@ -68,7 +72,8 @@ Usage:
   teacat <command> [arguments]
 
 Commands:
-  serve                 Start the local API server (Ollama + OpenAI compatible)
+  serve                 Start the local API server + web dashboard
+  ui                    Start the server and open the dashboard in a browser
   pull <model>          Download a model (e.g. smollm2:135m)
   list                  List installed models
   run <model> [prompt]  Chat with a model (interactive if no prompt)
@@ -80,6 +85,7 @@ Commands:
 Examples:
   teacat pull smollm2:135m
   teacat run smollm2:135m "Write a haiku about Go"
+  teacat ui
   teacat serve
   teacat create mymodel:latest -f .\model.gguf
 
@@ -91,6 +97,20 @@ func openStore() (*store.Store, error) {
 	return store.Open()
 }
 
+// openBrowser opens url with the platform's default browser.
+func openBrowser(url string) error {
+	var cmd *exec.Cmd
+	switch runtime.GOOS {
+	case "windows":
+		cmd = exec.Command("rundll32", "url.dll,FileProtocolHandler", url)
+	case "darwin":
+		cmd = exec.Command("open", url)
+	default:
+		cmd = exec.Command("xdg-open", url)
+	}
+	return cmd.Start()
+}
+
 // ---- serve ----------------------------------------------------------------
 
 func cmdServe(args []string) error {
@@ -99,6 +119,7 @@ func cmdServe(args []string) error {
 	port := fs.Int("port", 11434, "port")
 	ctx := fs.Int("ctx", 2048, "default context length")
 	preload := fs.String("model", "", "model to preload")
+	open := fs.Bool("open", false, "open the dashboard in a browser")
 	fs.Parse(args)
 
 	st, err := openStore()
@@ -120,9 +141,23 @@ func cmdServe(args []string) error {
 		}
 	}
 	addr := fmt.Sprintf("%s:%d", *host, *port)
+	browseHost := *host
+	if browseHost == "0.0.0.0" || browseHost == "::" || browseHost == "[::]" {
+		browseHost = "127.0.0.1"
+	}
+	dashboard := fmt.Sprintf("http://%s:%d/", browseHost, *port)
 	fmt.Printf("TeaCat %s listening on http://%s\n", version, addr)
-	fmt.Printf("  Ollama API: http://%s/api/chat\n", addr)
-	fmt.Printf("  OpenAI API: http://%s/v1/chat/completions\n", addr)
+	fmt.Printf("  Dashboard:  %s\n", dashboard)
+	fmt.Printf("  Ollama API: http://%s:%d/api/chat\n", browseHost, *port)
+	fmt.Printf("  OpenAI API: http://%s:%d/v1/chat/completions\n", browseHost, *port)
+	if *open {
+		go func() {
+			time.Sleep(300 * time.Millisecond)
+			if err := openBrowser(dashboard); err != nil {
+				fmt.Fprintf(os.Stderr, "[teacat] could not open browser: %v\n", err)
+			}
+		}()
+	}
 	return s.Listen(addr)
 }
 

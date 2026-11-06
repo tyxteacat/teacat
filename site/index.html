@@ -183,7 +183,7 @@
 <span class="c">Hello! How can I help you today?</span>
 
 <span class="p">$</span> teacat serve
-<span class="c">TeaCat 0.1.0 listening on :11434</span></pre>
+<span class="c">TeaCat 0.2.0 listening on :11434</span></pre>
     </div>
   </section>
 
@@ -196,6 +196,7 @@
       <div class="card"><span class="ico">🔌</span><h3>Two APIs, one server</h3><p>Drop-in Ollama endpoints and OpenAI-compatible chat completions with streaming, so existing clients just work.</p></div>
       <div class="card"><span class="ico">⬇️</span><h3>Model manager</h3><p>Pull from the Ollama registry with SHA-256 verification, import a local GGUF, or download a direct URL. Stored under ~/.teacat.</p></div>
       <div class="card"><span class="ico">💬</span><h3>Chat templates</h3><p>ChatML, Llama 3/2, Phi-3, Gemma and Command-R are detected automatically from model metadata.</p></div>
+      <div class="card"><span class="ico">🖥️</span><h3>Local dashboard</h3><p>A built-in web UI at <code>127.0.0.1:11434</code> for streaming chat, pulling models, tuning sampling and managing your library. Embedded, offline, no extra install.</p></div>
       <div class="card"><span class="ico">🪶</span><h3>Small and portable</h3><p>A single binary on Windows, Linux and macOS. No runtime, no service mesh, no account.</p></div>
     </div>
   </section>
@@ -207,7 +208,7 @@
       <div class="step"><h3>Build</h3><p><code>.\build.ps1</code> on Windows, <code>./build.sh</code> on Linux or macOS, or <code>go build -o teacat ./cmd/teacat</code>.</p></div>
       <div class="step"><h3>Pull</h3><p><code>teacat pull qwen2.5:0.5b</code> fetches a quantized instruct model into <code>~/.teacat</code>.</p></div>
       <div class="step"><h3>Chat</h3><p><code>teacat run qwen2.5:0.5b</code> starts a streaming terminal chat.</p></div>
-      <div class="step"><h3>Serve</h3><p><code>teacat serve</code> exposes <code>http://127.0.0.1:11434</code> for your own apps.</p></div>
+      <div class="step"><h3>Dashboard</h3><p><code>teacat ui</code> opens the local web UI at <code>http://127.0.0.1:11434</code>, with the APIs on the same port.</p></div>
     </div>
   </section>
 

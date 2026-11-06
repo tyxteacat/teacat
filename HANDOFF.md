@@ -18,7 +18,9 @@ engine (no llama.cpp, no cgo), and exposes:
 
 - an **Ollama-compatible REST API**
 - an **OpenAI-compatible chat completions API**
-- a CLI (`teacat pull`, `run`, `serve`, `list`, `show`, `rm`, `create`)
+- an **embedded web dashboard** at `http://127.0.0.1:11434/` (chat, models,
+  pull progress, sampling settings)
+- a CLI (`teacat pull`, `run`, `serve`, `ui`, `list`, `show`, `rm`, `create`)
 
 Status: **working and tested**. Both APIs stream correctly and generate
 sensible text on real models.
@@ -37,7 +39,7 @@ sensible text on real models.
 | Go module | `github.com/tyxteacat/teacat` |
 | Binary | `teacat.exe` (Windows) / `teacat` |
 | Model store | `~/.teacat` (env override: `TEACAT_HOME`) |
-| HTTP User-Agent | `TeaCat/0.1.0 (+https://github.com/tyxteacat/teacat)` |
+| HTTP User-Agent | `TeaCat/0.2.0 (+https://github.com/tyxteacat/teacat)` |
 | License | MIT |
 
 Brand constants live in `internal/brand/brand.go`. URLs also appear in:
@@ -178,7 +180,7 @@ go build ./...
 go vet ./...
 go test ./...
 .\build.ps1                 # produces teacat.exe
-.\teacat.exe version        # TeaCat 0.1.0
+.\teacat.exe version        # TeaCat 0.2.0
 ```
 
 On Linux/macOS use `./build.sh` instead, which produces `./teacat`.
@@ -241,6 +243,11 @@ Verified outputs:
 - `POST /api/generate` works.
 - `POST /v1/chat/completions` works, including SSE `data:` chunks and `[DONE]`.
 - `GET /api/tags` returns size, digest, family, parameter size, quantization.
+- Dashboard verified live: `GET /` returns the embedded UI (HTTP 200,
+  `text/html`), `/api/health` and `/api/info` return JSON, and `/api/chat`
+  streams NDJSON to the browser exactly as the dashboard expects.
+- Automated tests cover the dashboard handler, health/info endpoints and
+  preservation of `/api/version` + `/api/tags`.
 
 Measured speed on this laptop:
 
@@ -270,6 +277,7 @@ internal/engine/          generation loop, streaming detokenizer, stats
 internal/store/           ~/.teacat blobs + JSON manifests
 internal/registry/        registry.ollama.ai pull, URL import, SHA-256 check
 internal/server/          Ollama API + OpenAI API, streaming
+internal/webui/           embedded dashboard (index.html via go:embed)
 tools/debug/main.go       dev utility: tokenizer round-trip, logits, greedy
 site/                     static landing page for GitHub Pages + SEO
 ```
@@ -288,6 +296,11 @@ site/                     static landing page for GitHub Pages + SEO
   token decodes.
 - **Server concurrency**: one loaded model; generation holds a mutex, so requests
   are serialized. `/api/tags` and `/api/version` do not need the lock.
+- **Dashboard**: served at `/`, `/ui` and `/dashboard` from
+  `internal/webui/index.html`, embedded with `go:embed`. It talks only to the
+  local API, uses no external assets, and adds `GET /api/info` plus
+  `GET /api/health`. `teacat ui` opens the browser; `serve --open` does the same.
+  Streaming is parsed from NDJSON in the browser.
 
 ---
 
@@ -378,8 +391,10 @@ internal/model/{model.go,math.go}
 internal/registry/pull.go
 internal/sampler/{sampler.go,sampler_test.go}
 internal/server/server.go
+internal/server/{server.go,server_test.go}
 internal/store/{store.go,store_test.go}
 internal/tokenizer/{tokenizer.go,template.go,template_test.go}
+internal/webui/{webui.go,webui_test.go,index.html}
 site/{index.html,robots.txt,sitemap.xml,.nojekyll,README.md}
 tools/debug/main.go
 ```

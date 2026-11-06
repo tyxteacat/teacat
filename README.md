@@ -42,6 +42,9 @@ Maintainers / next AI: see **[HANDOFF.md](HANDOFF.md)** for current state, publi
   verification, direct GGUF URLs, and local file import.
 - **Two APIs** — Ollama (`/api/chat`, `/api/generate`, `/api/tags`, ...) and
   OpenAI (`/v1/chat/completions`, `/v1/models`), both with streaming.
+- **Web dashboard** — a built-in local UI at `http://127.0.0.1:11434/` for
+  chatting, streaming, pulling and deleting models, and tuning sampling. It is
+  embedded in the binary and works offline.
 
 ## Requirements
 
@@ -69,7 +72,7 @@ folder to your user `PATH`. Open a new terminal afterwards.
 To pass options, run the script block directly:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.1.0 -InstallDir C:\tools\teacat -NoPath
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.2.0 -InstallDir C:\tools\teacat -NoPath
 ```
 
 ### Linux / macOS
@@ -126,6 +129,7 @@ repository under a different account or host.
 .\teacat.exe pull qwen2.5:0.5b
 .\teacat.exe run qwen2.5:0.5b "Explain goroutines in two sentences"
 .\teacat.exe run qwen2.5:0.5b
+.\teacat.exe ui                  # server + dashboard in your browser
 .\teacat.exe serve --model qwen2.5:0.5b
 ```
 
@@ -134,8 +138,13 @@ repository under a different account or host.
 ./teacat pull qwen2.5:0.5b
 ./teacat run qwen2.5:0.5b "Explain goroutines in two sentences"
 ./teacat run qwen2.5:0.5b
+./teacat ui                     # server + dashboard in your browser
 ./teacat serve --model qwen2.5:0.5b
 ```
+
+Then open **http://127.0.0.1:11434/** for the dashboard. Chat streams into the
+page, the model list is live, and pull progress is shown inline. `teacat ui`
+opens it automatically.
 
 Models are stored in `~/.teacat` on every platform. Set `TEACAT_HOME` to use a
 different directory.
@@ -146,7 +155,8 @@ The local API listens on `http://127.0.0.1:11434` on every platform.
 
 | Command | Description |
 | --- | --- |
-| `teacat serve [--port 11434] [--host 127.0.0.1] [--ctx 2048] [--model NAME]` | Start the API server |
+| `teacat serve [--port 11434] [--host 127.0.0.1] [--ctx 2048] [--model NAME] [--open]` | Start the API server + dashboard |
+| `teacat ui [--port 11434]` | Start the server and open the dashboard |
 | `teacat pull <name[:tag]>` | Download from the Ollama registry |
 | `teacat pull --url <gguf-url> [--name name:tag]` | Download a direct GGUF URL |
 | `teacat create <name[:tag]> -f model.gguf` | Import a local GGUF file |
@@ -157,6 +167,23 @@ The local API listens on `http://127.0.0.1:11434` on every platform.
 
 `run` flags: `--ctx`, `--n` (max tokens), `--temp`, `--top-p`, `--top-k`,
 `--repeat-penalty`, `--system`.
+
+## Web dashboard
+
+`teacat serve` also serves a local dashboard:
+
+- **Chat** — streaming replies, markdown-free safe rendering, stop button,
+  per-response tokens/sec.
+- **Models** — installed models with size/quantization, one-click selection,
+  delete.
+- **Pull** — download any Ollama-registry model with a live progress bar.
+- **Settings** — system prompt, temperature, top-p, top-k, max tokens, saved in
+  the browser.
+- **API info** — copy-ready Ollama and OpenAI endpoint URLs.
+
+The dashboard is embedded with `go:embed`, so there are no external assets and no
+network access is required. `GET /api/info` describes the server, and
+`GET /api/health` returns status, version and uptime.
 
 ## HTTP API
 
@@ -172,7 +199,7 @@ curl http://127.0.0.1:11434/api/chat -d '{
 
 Endpoints: `GET /api/tags`, `POST /api/chat`, `POST /api/generate`,
 `POST /api/show`, `POST /api/pull`, `DELETE /api/delete`, `GET /api/ps`,
-`GET /api/version`.
+`GET /api/version`, `GET /api/info`, `GET /api/health`.
 
 ### OpenAI-compatible
 
@@ -206,6 +233,7 @@ internal/engine/      generation loop and streaming detokenizer
 internal/store/       on-disk model store (blobs + manifests)
 internal/registry/    Ollama registry / direct URL puller
 internal/server/      Ollama + OpenAI compatible HTTP API
+internal/webui/       embedded local dashboard (single HTML file)
 tools/debug/          developer inspection utility
 site/                 static landing page for search engines / GitHub Pages
 ```

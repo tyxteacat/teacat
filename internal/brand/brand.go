@@ -9,9 +9,11 @@ const (
 	// Author is the creator/maintainer.
 	Author = "Tyxen"
 	// Version is the release version.
-	Version = "0.1.0"
+	Version = "0.2.0"
 	// Repo is the canonical source repository.
 	Repo = "https://github.com/tyxteacat/teacat"
+	// Website is the canonical landing page.
+	Website = "https://tyxteacat.github.io/teacat/"
 	// Tagline describes the project in one line.
 	Tagline = "Local LLM runtime by Tyxen"
 )

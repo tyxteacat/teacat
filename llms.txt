@@ -17,7 +17,7 @@ kernels, tokenizers, transformer forward pass, sampler, CLI and HTTP server.
 - License: MIT
 - Language: Go
 - Platforms: Windows, Linux, macOS
-- Interfaces: CLI, Ollama REST API, OpenAI chat completions API
+- Interfaces: CLI, embedded web dashboard, Ollama REST API, OpenAI chat completions API
 - Model format: GGUF (LLaMA-family architectures)
 
 ## Main pages
@@ -31,7 +31,8 @@ kernels, tokenizers, transformer forward pass, sampler, CLI and HTTP server.
 ```
 teacat pull qwen2.5:0.5b
 teacat run qwen2.5:0.5b "Explain goroutines in two sentences"
-teacat serve
+teacat serve     # dashboard at http://127.0.0.1:11434/
+teacat ui        # same, and opens the dashboard
 ```
 
 ## Contact
