@@ -29,6 +29,8 @@ jobs:
         run: go vet ./...
       - name: Test
         run: go test ./...
+      - name: Smoke test CLI
+        run: go run ./cmd/teacat version
 
   cross-build:
     name: Cross-compile

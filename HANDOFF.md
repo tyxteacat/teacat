@@ -61,6 +61,10 @@ alternative**, **GGUF**, **OpenAI-compatible**.
 - Local git identity: `Tyxen <tyxteacat@users.noreply.github.com>`
 - **Published:** `tyxteacat/teacat` is a public repository and `main` has been
   pushed.
+- **Release:** `v0.1.0` is published with six prebuilt binaries (Windows, Linux,
+  macOS × amd64, arm64) plus `checksums.txt`.
+- **CI:** build, vet and tests pass on Windows, Linux and macOS runners; the
+  cross-compile job passes as well.
 - Description and topics are set on the repository.
 - GitHub Pages is enabled with **Source: GitHub Actions**. The workflow
   `.github/workflows/pages.yml` deploys the `site/` folder (branch-based Pages
@@ -209,7 +213,8 @@ Tests:
 - `internal/store/store_test.go` — ref parsing
 - `internal/tokenizer/template_test.go` — ChatML, Llama 3, plain templates
 
-All currently pass. Keep them passing.
+All currently pass locally and on the Windows, Linux and macOS CI runners. Keep
+them passing.
 
 ---
 
@@ -239,6 +244,12 @@ Measured speed on this laptop:
 
 - SmolLM2-135M: ~14 tok/s generation, ~17 tok/s prompt
 - Qwen2.5-0.5B: ~2 tok/s generation, ~2.5 tok/s prompt
+
+Cross-platform verification: `go build ./...` and `go vet ./...` succeed for
+`linux/amd64`, `linux/arm64`, `darwin/amd64` and `darwin/arm64`; CI runs the full
+test suite on `ubuntu-latest`, `macos-latest` and `windows-latest`. Published
+release binaries were checked for the expected container format (ELF, Mach-O)
+and SHA-256 checksums.
 
 Do not promise faster numbers without benchmarking.
 
@@ -333,8 +344,8 @@ site/                     static landing page for GitHub Pages + SEO
 - Embeddings endpoint (`/api/embeddings`, `/v1/embeddings`)
 - Tool calling / function calling
 - Multi-model concurrent serving
-- Publish a tagged release (`git tag v0.1.0 && git push --tags`) so the release
-  workflow uploads the six prebuilt binaries
+- Cut the next release with `git tag v0.1.1 && git push origin v0.1.1`; the
+  release workflow uploads the six prebuilt binaries automatically
 - Add screenshots/GIF to the README and landing page
 
 ---
