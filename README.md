@@ -46,21 +46,43 @@ Maintainers / next AI: see **[HANDOFF.md](HANDOFF.md)** for current state, publi
 ## Requirements
 
 - Go 1.22+ (developed with Go 1.27)
-- Windows, Linux or macOS (Windows is the primary target)
+- Windows, Linux or macOS on x86-64 or ARM64
 - RAM roughly equal to the model file size (F16 weights are expanded to F32 at
   load for speed, so F16 models need ~2× file size)
 
+TeaCat is pure Go with no cgo, so it cross-compiles to every target without a
+toolchain per platform. The same source is built and tested on Windows, Linux
+and macOS in CI.
+
 ## Build
 
-```powershell
-go build -o teacat.exe ./cmd/teacat
-```
-
-Or:
+Build for the machine you are on:
 
 ```powershell
+# Windows (PowerShell)
 .\build.ps1
+
+# Linux / macOS
+./build.sh
 ```
+
+Or directly with Go:
+
+```powershell
+go build -trimpath -ldflags "-s -w" -o teacat.exe ./cmd/teacat   # Windows
+go build -trimpath -ldflags "-s -w" -o teacat ./cmd/teacat       # Linux/macOS
+```
+
+Cross-compile every supported target into `dist/`:
+
+```powershell
+.\build.ps1 -All        # Windows
+./build.sh --all        # Linux/macOS
+```
+
+That produces Windows, Linux and macOS binaries for both amd64 and arm64, plus
+`dist/checksums.txt`. Tagged releases (`v*`) publish the same binaries
+automatically through `.github/workflows/release.yml`.
 
 The Go module path is `github.com/tyxteacat/teacat`; update it if you publish the
 repository under a different account or host.
@@ -68,18 +90,25 @@ repository under a different account or host.
 ## Quick start
 
 ```powershell
-# Download a model from the Ollama registry
+# Windows
 .\teacat.exe pull qwen2.5:0.5b
-
-# One-shot chat
 .\teacat.exe run qwen2.5:0.5b "Explain goroutines in two sentences"
-
-# Interactive chat
 .\teacat.exe run qwen2.5:0.5b
-
-# Local API server on http://127.0.0.1:11434
 .\teacat.exe serve --model qwen2.5:0.5b
 ```
+
+```bash
+# Linux / macOS
+./teacat pull qwen2.5:0.5b
+./teacat run qwen2.5:0.5b "Explain goroutines in two sentences"
+./teacat run qwen2.5:0.5b
+./teacat serve --model qwen2.5:0.5b
+```
+
+Models are stored in `~/.teacat` on every platform. Set `TEACAT_HOME` to use a
+different directory.
+
+The local API listens on `http://127.0.0.1:11434` on every platform.
 
 ## CLI
 

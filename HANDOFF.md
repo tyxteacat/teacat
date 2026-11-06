@@ -175,11 +175,31 @@ go test ./...
 .\teacat.exe version        # TeaCat 0.1.0
 ```
 
-`build.ps1` runs:
+On Linux/macOS use `./build.sh` instead, which produces `./teacat`.
+
+Cross-compile all supported targets (Windows/Linux/macOS × amd64/arm64) into
+`dist/` with checksums:
 
 ```powershell
-go build -trimpath -ldflags "-s -w" -o teacat.exe ./cmd/teacat
+.\build.ps1 -All
 ```
+
+```bash
+./build.sh --all
+```
+
+CI (`.github/workflows/ci.yml`) runs build/vet/test on Windows, Linux and macOS
+and cross-compiles every target. Tagged releases (`v*`) are built and published
+by `.github/workflows/release.yml`.
+
+`build.ps1` / `build.sh` run, per target:
+
+```powershell
+go build -trimpath -ldflags "-s -w" -o <output> ./cmd/teacat
+```
+
+The engine is pure Go with `CGO_ENABLED=0`, so no per-platform toolchain is
+needed.
 
 Tests:
 
@@ -313,7 +333,8 @@ site/                     static landing page for GitHub Pages + SEO
 - Embeddings endpoint (`/api/embeddings`, `/v1/embeddings`)
 - Tool calling / function calling
 - Multi-model concurrent serving
-- Publish prebuilt `teacat.exe` releases via GitHub Actions
+- Publish a tagged release (`git tag v0.1.0 && git push --tags`) so the release
+  workflow uploads the six prebuilt binaries
 - Add screenshots/GIF to the README and landing page
 
 ---
@@ -327,10 +348,13 @@ CITATION.cff
 LICENSE
 README.md
 HANDOFF.md              <- this file
-build.ps1
+build.ps1               <- Windows local + cross build
+build.sh                <- Linux/macOS local + cross build
 go.mod
 llms.txt
-.github/workflows/pages.yml   <- GitHub Pages deploy
+.github/workflows/pages.yml    <- GitHub Pages deploy
+.github/workflows/ci.yml       <- build/vet/test on Windows, Linux, macOS
+.github/workflows/release.yml  <- tag builds six binaries and publishes them
 
 cmd/teacat/main.go
 internal/brand/brand.go

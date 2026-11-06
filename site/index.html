@@ -202,9 +202,9 @@
 
   <section id="start">
     <h2>Brew your first model</h2>
-    <p class="sub">Requires Go 1.22+ to build. Windows is the primary target; Linux and macOS work too.</p>
+    <p class="sub">Prebuilt binaries for Windows, Linux and macOS (amd64 and arm64), or build from source with Go 1.22+.</p>
     <div class="steps">
-      <div class="step"><h3>Build</h3><p><code>go build -o teacat.exe ./cmd/teacat</code> or run <code>.\build.ps1</code> on Windows.</p></div>
+      <div class="step"><h3>Build</h3><p><code>.\build.ps1</code> on Windows, <code>./build.sh</code> on Linux or macOS, or <code>go build -o teacat ./cmd/teacat</code>.</p></div>
       <div class="step"><h3>Pull</h3><p><code>teacat pull qwen2.5:0.5b</code> fetches a quantized instruct model into <code>~/.teacat</code>.</p></div>
       <div class="step"><h3>Chat</h3><p><code>teacat run qwen2.5:0.5b</code> starts a streaming terminal chat.</p></div>
       <div class="step"><h3>Serve</h3><p><code>teacat serve</code> exposes <code>http://127.0.0.1:11434</code> for your own apps.</p></div>
