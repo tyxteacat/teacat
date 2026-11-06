@@ -22,6 +22,8 @@ teacat serve
 - **Website:** `site/` (GitHub Pages ready)
 - **License:** MIT
 
+Maintainers / next AI: see **[HANDOFF.md](HANDOFF.md)** for current state, publishing steps and continuation notes.
+
 ## Features
 
 - **GGUF model loader** — v2/v3 metadata, tensor table, alignment handling.
