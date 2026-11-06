@@ -65,6 +65,8 @@ alternative**, **GGUF**, **OpenAI-compatible**.
   macOS × amd64, arm64) plus `checksums.txt`.
 - **CI:** build, vet and tests pass on Windows, Linux and macOS runners; the
   cross-compile job passes as well.
+- **Windows installer:** `install.ps1` (one-liner in the README) downloads the
+  latest release, checks the SHA-256 checksum and adds TeaCat to the user PATH.
 - Description and topics are set on the repository.
 - GitHub Pages is enabled with **Source: GitHub Actions**. The workflow
   `.github/workflows/pages.yml` deploys the `site/` folder (branch-based Pages
@@ -361,6 +363,7 @@ README.md
 HANDOFF.md              <- this file
 build.ps1               <- Windows local + cross build
 build.sh                <- Linux/macOS local + cross build
+install.ps1             <- Windows downloader/installer for GitHub releases
 go.mod
 llms.txt
 .github/workflows/pages.yml    <- GitHub Pages deploy

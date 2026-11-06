@@ -54,6 +54,38 @@ TeaCat is pure Go with no cgo, so it cross-compiles to every target without a
 toolchain per platform. The same source is built and tested on Windows, Linux
 and macOS in CI.
 
+## Install
+
+### Windows (PowerShell)
+
+```powershell
+irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1 | iex
+```
+
+The installer downloads the latest `teacat.exe` for your architecture, verifies
+its SHA-256 checksum, installs it to `%LOCALAPPDATA%\TeaCat\bin`, and adds that
+folder to your user `PATH`. Open a new terminal afterwards.
+
+To pass options, run the script block directly:
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.1.0 -InstallDir C:\tools\teacat -NoPath
+```
+
+### Linux / macOS
+
+Download the binary for your platform from
+[Releases](https://github.com/tyxteacat/teacat/releases), then:
+
+```bash
+chmod +x teacat-linux-amd64
+sudo mv teacat-linux-amd64 /usr/local/bin/teacat
+teacat version
+```
+
+Use `teacat-linux-arm64` on ARM Linux, `teacat-darwin-arm64` on Apple Silicon,
+and `teacat-darwin-amd64` on Intel Macs.
+
 ## Build
 
 Build for the machine you are on:
