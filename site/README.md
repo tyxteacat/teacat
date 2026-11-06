@@ -5,9 +5,13 @@ Static landing page for **TeaCat**, the local LLM runtime by **Tyxen**.
 ## Deploy with GitHub Pages
 
 1. Create the repository `tyxteacat/teacat` on GitHub and push this project.
-2. In **Settings → Pages**, choose **Deploy from a branch**, branch `main`,
-   folder `/site`.
-3. The page will be served at `https://tyxteacat.github.io/teacat/`.
+2. In **Settings → Pages**, set **Source** to **GitHub Actions**.
+3. `.github/workflows/pages.yml` uploads this `site/` directory and deploys it
+   on every push to `main` that touches `site/**`.
+4. The page is served at `https://tyxteacat.github.io/teacat/`.
+
+GitHub's branch-based Pages source only allows `/` or `/docs`, so the site stays
+in `site/` and is published through Actions instead.
 
 `.nojekyll` is included so GitHub Pages serves the files as-is.
 

@@ -59,14 +59,14 @@ alternative**, **GGUF**, **OpenAI-compatible**.
 - Git initialized locally. Branch: `main`.
 - Remote `origin`: `https://github.com/tyxteacat/teacat.git`
 - Local git identity: `Tyxen <tyxteacat@users.noreply.github.com>`
-- All work is committed locally. **Not pushed yet.**
-- The GitHub org `tyxteacat` exists publicly but has **no public repositories**
-  yet (`https://github.com/tyxteacat` shows "This organization has no public
-  repositories").
-- A Git Credential Manager OAuth prompt was shown to the user (account with org
-  access to `tyxteacat`). The user needs to click **Authorize git-ecosystem**
-  before any push works. This is the standard `git` credential flow — not a
-  separate app.
+- **Published:** `tyxteacat/teacat` is a public repository and `main` has been
+  pushed.
+- Description and topics are set on the repository.
+- GitHub Pages is enabled with **Source: GitHub Actions**. The workflow
+  `.github/workflows/pages.yml` deploys the `site/` folder (branch-based Pages
+  only allows `/` or `/docs`, so Actions is used instead).
+- Git Credential Manager OAuth is authorized for the account with access to the
+  `tyxteacat` org.
 - Git remote is configured. **Do not re-run commands that trigger OAuth blindly;
   check whether credentials already work first** (`git ls-remote origin`).
 
@@ -86,53 +86,16 @@ empty/nonexistent repo. If it hangs or opens a browser, OAuth is not completed.
 
 ## 4. Next actions (in order)
 
-### 4.1 Authorize Git (if not done)
+### 4.1 Publish (done)
 
-The user must click **Authorize git-ecosystem** on the GitHub OAuth page that
-Git Credential Manager shows. It grants read/write access, including the
-`tyxteacat` organization. No token is written into this repository.
+Repository `tyxteacat/teacat` exists, is public, and `main` is pushed.
 
-### 4.2 Create the repository
+### 4.2 Repository metadata (done)
 
-GitHub does not create repositories on push. Create `tyxteacat/teacat` first.
+Description and topics were set via the API. To update them again, edit
+**Settings → General** or repeat the API calls in 4.3.
 
-Option A — `gh` CLI (if installed and authenticated):
-
-```powershell
-gh auth status
-gh repo create tyxteacat/teacat --public --source=. --remote=origin --push
-```
-
-If `origin` already exists, drop `--remote=origin` `--push` and push manually.
-
-Option B — web UI:
-
-1. Open `https://github.com/organizations/tyxteacat/repositories/new`
-2. Name: `teacat`
-3. Visibility: **Public**
-4. Do **not** initialize with README / .gitignore / license
-5. Create repository, then run:
-
-```powershell
-git push -u origin main
-```
-
-Option C — REST API (only if a token is available locally; never print or
-commit it):
-
-```powershell
-$cred = "protocol=https`nhost=github.com`n`n" | git credential fill
-# parse the password field into $token WITHOUT echoing it, then:
-curl.exe -s -X POST https://api.github.com/orgs/tyxteacat/repos `
-  -H "Authorization: Bearer $token" `
-  -H "Accept: application/vnd.github+json" `
-  -d '{"name":"teacat","private":false,"description":"TeaCat - local LLM runtime by Tyxen"}'
-git push -u origin main
-```
-
-### 4.3 Repository metadata (important for search)
-
-Set description and topics in **Settings → General** or via API:
+### 4.3 Description, topics and homepage
 
 Description:
 
@@ -159,26 +122,19 @@ curl.exe -X PUT https://api.github.com/repos/tyxteacat/teacat/topics `
   -d '{"names":["teacat","tyxen","local-llm","gguf","ollama","openai-compatible","golang","inference-engine","llm-runtime"]}'
 ```
 
-### 4.4 Enable GitHub Pages
+### 4.4 GitHub Pages (done)
 
 Repository contains a static site in `site/` (with `.nojekyll`, `robots.txt`,
 `sitemap.xml`, SEO meta tags and JSON-LD).
 
-Web UI:
+GitHub's branch-based Pages source only accepts `/` or `/docs`, so the site is
+published with **Source: GitHub Actions**:
 
-1. Repo → **Settings → Pages**
-2. **Deploy from a branch**
-3. Branch `main`, folder `/site`
-4. Save
-
-API:
-
-```powershell
-curl.exe -X POST https://api.github.com/repos/tyxteacat/teacat/pages `
-  -H "Authorization: Bearer $token" `
-  -H "Accept: application/vnd.github+json" `
-  -d '{"source":{"branch":"main","path":"/site"}}'
-```
+1. Repo → **Settings → Pages** → **Source: GitHub Actions**.
+2. `.github/workflows/pages.yml` uploads `site/` and deploys it on every push to
+   `main` that changes `site/**` (or manually via **Run workflow**).
+3. Verify with `actions/configure-pages` at:
+   `https://api.github.com/repos/tyxteacat/teacat/pages`
 
 Then verify:
 
@@ -187,7 +143,7 @@ curl.exe -s https://tyxteacat.github.io/teacat/ | Select-String "TeaCat"
 curl.exe -s https://tyxteacat.github.io/teacat/sitemap.xml
 ```
 
-Pages may take 1–2 minutes to publish.
+Pages may take 1–2 minutes to publish after the workflow starts.
 
 ### 4.5 Get indexed by Google
 
@@ -374,6 +330,8 @@ HANDOFF.md              <- this file
 build.ps1
 go.mod
 llms.txt
+.github/workflows/pages.yml   <- GitHub Pages deploy
+
 cmd/teacat/main.go
 internal/brand/brand.go
 internal/engine/engine.go
