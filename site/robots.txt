@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://tyxteacat.github.io/teacat/sitemap.xml

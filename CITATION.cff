@@ -1,0 +1,23 @@
+cff-version: 1.2.0
+message: "If you use TeaCat in your work, cite it as below."
+title: "TeaCat: a local LLM runtime by Tyxen"
+abstract: >-
+  TeaCat is a free, open-source local language-model runtime written in Go.
+  It loads GGUF models, performs inference with its own transformer engine,
+  and exposes Ollama-compatible and OpenAI-compatible HTTP APIs.
+authors:
+  - name: Tyxen
+version: 0.1.0
+date-released: 2026-11-07
+url: "https://tyxteacat.github.io/teacat/"
+repository-code: "https://github.com/tyxteacat/teacat"
+license: MIT
+keywords:
+  - TeaCat
+  - TeaCat Tyxen
+  - Tyxen
+  - local LLM
+  - GGUF
+  - Ollama alternative
+  - OpenAI-compatible
+  - Go

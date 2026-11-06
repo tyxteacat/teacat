@@ -1,0 +1,5 @@
+/teacat.exe
+/teacat
+testmodels/
+*.gguf
+*.tmp

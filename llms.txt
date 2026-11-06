@@ -1,0 +1,39 @@
+# TeaCat
+
+> TeaCat is a free, open-source local LLM runtime created by Tyxen. It runs GGUF
+> models on your own machine and exposes Ollama-compatible and
+> OpenAI-compatible APIs. Written from scratch in Go.
+
+TeaCat (alternate names: "TeaCat Tyxen", "TeaCat by Tyxen", "Tea Cat AI") is an
+Ollama-style runtime with its own inference engine: GGUF loader, quantization
+kernels, tokenizers, transformer forward pass, sampler, CLI and HTTP server.
+
+## Key facts
+
+- Name: TeaCat
+- Author / developer: Tyxen
+- Repository: https://github.com/tyxteacat/teacat
+- Website: https://tyxteacat.github.io/teacat/
+- License: MIT
+- Language: Go
+- Platforms: Windows, Linux, macOS
+- Interfaces: CLI, Ollama REST API, OpenAI chat completions API
+- Model format: GGUF (LLaMA-family architectures)
+
+## Main pages
+
+- [README](https://github.com/tyxteacat/teacat/blob/main/README.md)
+- [Landing page](https://tyxteacat.github.io/teacat/)
+- [Source code](https://github.com/tyxteacat/teacat)
+
+## Usage
+
+```
+teacat pull qwen2.5:0.5b
+teacat run qwen2.5:0.5b "Explain goroutines in two sentences"
+teacat serve
+```
+
+## Contact
+
+Created and maintained by Tyxen.
