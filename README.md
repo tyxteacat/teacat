@@ -12,8 +12,17 @@ this repository.
 
 ```
 teacat pull smollm2:135m
+teacat chat smollm2:135m
+```
+
+`pull` only downloads the model. `chat` opens the modern browser interface with
+that model selected (it pulls the model first if needed). Prefer the terminal?
+Use `teacat run smollm2:135m` for an interactive `>>>` prompt (use `/bye` to
+exit, `/clear` to reset, `/help` for commands). Pass a prompt to `run` to get a
+single answer instead:
+
+```
 teacat run smollm2:135m "Write a haiku about Go"
-teacat serve
 ```
 
 - **Project:** TeaCat
@@ -38,6 +47,10 @@ Maintainers / next AI: see **[HANDOFF.md](HANDOFF.md)** for current state, publi
 - **Samplers** — temperature, top-k, top-p, min-p, repetition penalty, seeds,
   greedy mode.
 - **Model store** — content-addressed blobs and manifests under `~/.teacat`.
+- **Hardware aware** — uses all logical CPU cores, reports CPU/RAM/GPU with
+  `teacat info`, and switches to packed-weight low-memory loading when RAM is
+  tight. Inference currently runs on the CPU; detected GPUs are reported but not
+  used for tensor math yet.
 - **Puller** — anonymous pulls from `registry.ollama.ai` (OCI) with SHA-256
   verification, direct GGUF URLs, and local file import.
 - **Two APIs** — Ollama (`/api/chat`, `/api/generate`, `/api/tags`, ...) and
@@ -72,7 +85,7 @@ folder to your user `PATH`. Open a new terminal afterwards.
 To pass options, run the script block directly:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.2.0 -InstallDir C:\tools\teacat -NoPath
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.3.0 -InstallDir C:\tools\teacat -NoPath
 ```
 
 ### Linux / macOS
@@ -127,8 +140,9 @@ repository under a different account or host.
 ```powershell
 # Windows
 .\teacat.exe pull qwen2.5:0.5b
+.\teacat.exe chat qwen2.5:0.5b            # modern chat UI in your browser
+.\teacat.exe run qwen2.5:0.5b             # interactive >>> chat in the terminal
 .\teacat.exe run qwen2.5:0.5b "Explain goroutines in two sentences"
-.\teacat.exe run qwen2.5:0.5b
 .\teacat.exe ui                  # server + dashboard in your browser
 .\teacat.exe serve --model qwen2.5:0.5b
 ```
@@ -136,11 +150,16 @@ repository under a different account or host.
 ```bash
 # Linux / macOS
 ./teacat pull qwen2.5:0.5b
+./teacat chat qwen2.5:0.5b                 # modern chat UI in your browser
+./teacat run qwen2.5:0.5b                  # interactive >>> chat in the terminal
 ./teacat run qwen2.5:0.5b "Explain goroutines in two sentences"
-./teacat run qwen2.5:0.5b
 ./teacat ui                     # server + dashboard in your browser
 ./teacat serve --model qwen2.5:0.5b
 ```
+
+`teacat pull <model>` only downloads. `teacat chat <model>` opens the browser
+interface, and `teacat run <model>` starts the terminal chat. Both pull the model
+automatically if it is not installed yet, just like Ollama.
 
 Then open **http://127.0.0.1:11434/** for the dashboard. Chat streams into the
 page, the model list is live, and pull progress is shown inline. `teacat ui`
@@ -157,22 +176,27 @@ The local API listens on `http://127.0.0.1:11434` on every platform.
 | --- | --- |
 | `teacat serve [--port 11434] [--host 127.0.0.1] [--ctx 2048] [--model NAME] [--open]` | Start the API server + dashboard |
 | `teacat ui [--port 11434]` | Start the server and open the dashboard |
-| `teacat pull <name[:tag]>` | Download from the Ollama registry |
+| `teacat chat [model] [--port 11434]` | Open the modern browser chat, with the model selected |
+| `teacat pull <name[:tag]>` | Download from the Ollama registry (download only) |
 | `teacat pull --url <gguf-url> [--name name:tag]` | Download a direct GGUF URL |
 | `teacat create <name[:tag]> -f model.gguf` | Import a local GGUF file |
 | `teacat list` | List installed models |
+| `teacat info [--json]` | Show CPU, RAM, GPU, threads and whether models fit in RAM |
 | `teacat show <model>` | Show architecture, context, template |
-| `teacat run <model> [prompt]` | Chat, streaming to the terminal |
+| `teacat run <model> [prompt]` | Open the interactive `>>>` terminal chat, or answer one prompt |
 | `teacat rm <model>` | Delete a model and unreferenced blobs |
 
 `run` flags: `--ctx`, `--n` (max tokens), `--temp`, `--top-p`, `--top-k`,
-`--repeat-penalty`, `--system`.
+`--repeat-penalty`, `--system`, `--threads`, `--low-mem`, `--web`.
+
+`serve` and `chat` also accept `--threads N` and `--low-mem`.
+`TEACAT_THREADS=4` sets the default thread count for every command.
 
 ## Web dashboard
 
 `teacat serve` also serves a local dashboard:
 
-- **Chat** — streaming replies, markdown-free safe rendering, stop button,
+- **Chat** — streaming replies, safe markdown/code rendering, stop button,
   per-response tokens/sec.
 - **Models** — installed models with size/quantization, one-click selection,
   delete.

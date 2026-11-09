@@ -187,6 +187,21 @@
     background: var(--panel-2); border: 1px solid var(--line-soft);
     border-radius: 12px; padding: 10px 13px;
   }
+  .msg .body.markdown { white-space: normal; }
+  .msg .body.markdown p { margin: 0 0 8px; }
+  .msg .body.markdown p:last-child { margin-bottom: 0; }
+  .msg .body.markdown code {
+    font-family: var(--mono); font-size: 12.5px; background: var(--panel-3);
+    border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px;
+  }
+  .msg .body.markdown pre {
+    margin: 8px 0; padding: 11px 12px; overflow-x: auto;
+    background: #0b0908; border: 1px solid var(--line); border-radius: 9px;
+  }
+  .msg .body.markdown pre code { border: 0; background: transparent; padding: 0; font-size: 12.5px; }
+  .msg .body.markdown strong { color: var(--accent); }
+  .msg .body.markdown ul, .msg .body.markdown ol { margin: 6px 0; padding-left: 22px; }
+  .msg .body.markdown h1, .msg .body.markdown h2, .msg .body.markdown h3 { margin: 10px 0 6px; font-size: 15px; }
   .msg.user .body { background: rgba(230,181,102,.12); border-color: rgba(230,181,102,.28); }
   .msg .body:empty::after { content: "…"; color: var(--dim); }
   .msg .foot { margin-top: 4px; color: var(--dim); font-size: 11px; font-family: var(--mono); }
@@ -388,7 +403,7 @@
 
   const state = {
     models: [],
-    selected: localStorage.getItem("teacat.model") || "",
+    selected: new URLSearchParams(location.search).get("model") || localStorage.getItem("teacat.model") || "",
     messages: [],
     busy: false,
     controller: null
@@ -589,6 +604,28 @@
     return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   }
 
+  // Small, dependency-free markdown renderer for assistant replies. Input is
+  // escaped first, so model output can never inject HTML.
+  function renderMarkdown(src) {
+    const blocks = [];
+    let s = escapeHtml(src || "");
+    s = s.replace(/```([\w+-]*)\r?\n?([\s\S]*?)(?:```|$)/g, (_, lang, code) => {
+      const i = blocks.length;
+      blocks.push('<pre><code>' + code.replace(/\n$/, "") + "</code></pre>");
+      return "\u0000" + i + "\u0000";
+    });
+    s = s.replace(/`([^`\n]+)`/g, "<code>$1</code>");
+    s = s.replace(/^###\s+(.+)$/gm, "<h3>$1</h3>");
+    s = s.replace(/^##\s+(.+)$/gm, "<h2>$1</h2>");
+    s = s.replace(/^#\s+(.+)$/gm, "<h1>$1</h1>");
+    s = s.replace(/\*\*([^*\n]+)\*\*/g, "<strong>$1</strong>");
+    s = s.replace(/(^|[\s(])\*([^*\n]+)\*/g, "$1<em>$2</em>");
+    s = s.replace(/(^|\n)[-*]\s+(.+)/g, "$1• $2");
+    s = s.replace(/\n/g, "<br>");
+    s = s.replace(/\u0000(\d+)\u0000/g, (_, i) => blocks[Number(i)] || "");
+    return s;
+  }
+
   function renderMessages() {
     el.messages.innerHTML = "";
     if (!state.messages.length) {
@@ -615,8 +652,14 @@
     wrap.innerHTML =
       '<div class="avatar">' + (role === "user" ? "🙂" : "🫖") + '</div>' +
       '<div class="body-wrap"><div class="role"></div><div class="body"></div><div class="foot"></div></div>';
+    const body = wrap.querySelector(".body");
     wrap.querySelector(".role").textContent = role === "user" ? "You" : "TeaCat";
-    wrap.querySelector(".body").textContent = content || "";
+    if (role === "user") {
+      body.textContent = content || "";
+    } else {
+      body.classList.add("markdown");
+      body.innerHTML = renderMarkdown(content || "");
+    }
     return wrap;
   }
 
@@ -709,7 +752,7 @@
           if (evt.error) throw new Error(evt.error);
           if (evt.message && evt.message.content) {
             answer += evt.message.content;
-            bodyEl.textContent = answer;
+            bodyEl.innerHTML = renderMarkdown(answer);
             scrollToBottom(false);
           }
           if (evt.done) stats = evt;
@@ -726,8 +769,7 @@
     } catch (err) {
       if (err.name === "AbortError") {
         bodyEl.textContent = answer + (answer ? "\n\n[stopped]" : "[stopped]");
-        if (answer) state.messages.push({ role: "assistant", content: answer });
-      } else {
+        if (answer) state.messages.push({ role: "assistant", content: answer });      } else {
         bodyEl.textContent = "Error: " + err.message;
         toast(err.message, true);
         // Remove the failed user turn so retrying does not duplicate it.

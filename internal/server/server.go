@@ -13,6 +13,7 @@ import (
 
 	"github.com/tyxteacat/teacat/internal/brand"
 	"github.com/tyxteacat/teacat/internal/engine"
+	"github.com/tyxteacat/teacat/internal/hardware"
 	"github.com/tyxteacat/teacat/internal/model"
 	"github.com/tyxteacat/teacat/internal/registry"
 	"github.com/tyxteacat/teacat/internal/sampler"
@@ -23,10 +24,11 @@ import (
 
 // Server is the local inference daemon.
 type Server struct {
-	Store   *store.Store
-	Ctx     int
-	Version string
-	Logf    func(format string, args ...any)
+	Store     *store.Store
+	Ctx       int
+	Version   string
+	LowMemory bool
+	Logf      func(format string, args ...any)
 
 	mu       sync.Mutex
 	ref      string
@@ -86,6 +88,7 @@ func (s *Server) handleInfo(w http.ResponseWriter, r *http.Request) {
 		"website":   brand.Website,
 		"dashboard": "/",
 		"models":    len(models),
+		"hardware":  hardware.Detect(),
 		"endpoints": map[string]string{
 			"ollama":        "/api",
 			"openai":        "/v1",
@@ -139,7 +142,11 @@ func (s *Server) ensureLoaded(ref string) (*model.Model, store.Manifest, error) 
 	}
 	s.logf("loading model %s ...", manifest.Ref())
 	start := time.Now()
-	m, err := model.Load(manifest.GGUF)
+	lowMem := s.LowMemory || hardware.ShouldUseLowMemory(uint64(manifest.Size), manifest.Quant)
+	if lowMem {
+		s.logf("low-memory mode: keeping packed weights (saves RAM, slower)")
+	}
+	m, err := model.LoadWithOptions(manifest.GGUF, model.LoadOptions{LowMemory: lowMem})
 	if err != nil {
 		return nil, store.Manifest{}, err
 	}

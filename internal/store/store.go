@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,6 +17,9 @@ import (
 
 	"github.com/tyxteacat/teacat/internal/gguf"
 )
+
+// ErrNotFound is returned by Get when a model is not installed.
+var ErrNotFound = errors.New("model not found")
 
 // Manifest describes one installed model.
 type Manifest struct {
@@ -113,7 +117,7 @@ func (s *Store) Get(ref string) (Manifest, error) {
 	b, err := os.ReadFile(p)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return Manifest{}, fmt.Errorf("model %q not found (try: teacat pull %s)", ref, ref)
+			return Manifest{}, fmt.Errorf("%w: %q (try: teacat pull %s)", ErrNotFound, ref, ref)
 		}
 		return Manifest{}, err
 	}

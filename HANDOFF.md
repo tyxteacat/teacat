@@ -20,7 +20,7 @@ engine (no llama.cpp, no cgo), and exposes:
 - an **OpenAI-compatible chat completions API**
 - an **embedded web dashboard** at `http://127.0.0.1:11434/` (chat, models,
   pull progress, sampling settings)
-- a CLI (`teacat pull`, `run`, `serve`, `ui`, `list`, `show`, `rm`, `create`)
+- a CLI (`teacat pull`, `run`, `chat`, `serve`, `ui`, `list`, `show`, `rm`, `create`)
 
 Status: **working and tested**. Both APIs stream correctly and generate
 sensible text on real models.
@@ -39,7 +39,7 @@ sensible text on real models.
 | Go module | `github.com/tyxteacat/teacat` |
 | Binary | `teacat.exe` (Windows) / `teacat` |
 | Model store | `~/.teacat` (env override: `TEACAT_HOME`) |
-| HTTP User-Agent | `TeaCat/0.2.0 (+https://github.com/tyxteacat/teacat)` |
+| HTTP User-Agent | `TeaCat/0.3.0 (+https://github.com/tyxteacat/teacat)` |
 | License | MIT |
 
 Brand constants live in `internal/brand/brand.go`. URLs also appear in:
@@ -63,7 +63,7 @@ alternative**, **GGUF**, **OpenAI-compatible**.
 - Local git identity: `Tyxen <tyxteacat@users.noreply.github.com>`
 - **Published:** `tyxteacat/teacat` is a public repository and `main` has been
   pushed.
-- **Release:** `v0.2.0` is published with six prebuilt binaries (Windows,
+- **Release:** `v0.3.0` is published with six prebuilt binaries (Windows,
   Linux, macOS × amd64, arm64) plus `checksums.txt`. `v0.1.0` remains
   available. The Windows installer fetches the latest release.
 - **Dashboard:** the embedded local UI is live at `http://127.0.0.1:11434/`
@@ -183,7 +183,7 @@ go build ./...
 go vet ./...
 go test ./...
 .\build.ps1                 # produces teacat.exe
-.\teacat.exe version        # TeaCat 0.2.0
+.\teacat.exe version        # TeaCat 0.3.0
 ```
 
 On Linux/macOS use `./build.sh` instead, which produces `./teacat`.
@@ -277,6 +277,7 @@ internal/tokenizer/       SPM + byte-BPE tokenizers, chat templates
 internal/model/           config, weights, forward pass, KV cache, RoPE, GQA
 internal/sampler/         temperature/top-k/top-p/min-p/repetition
 internal/engine/          generation loop, streaming detokenizer, stats
+internal/hardware/        CPU/RAM/GPU detection, memory-fit and low-memory mode
 internal/store/           ~/.teacat blobs + JSON manifests
 internal/registry/        registry.ollama.ai pull, URL import, SHA-256 check
 internal/server/          Ollama API + OpenAI API, streaming

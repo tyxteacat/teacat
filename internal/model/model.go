@@ -14,18 +14,18 @@ import (
 
 // Config holds the architecture parameters read from GGUF metadata.
 type Config struct {
-	Arch    string
-	Name    string
-	NLayer  int
-	NEmbd   int
-	NHead   int
-	NHeadKV int
-	HeadDim int
-	NFF     int
-	Vocab   int
-	Ctx     int
-	Eps     float32
-	RopeBase float32
+	Arch      string
+	Name      string
+	NLayer    int
+	NEmbd     int
+	NHead     int
+	NHeadKV   int
+	HeadDim   int
+	NFF       int
+	Vocab     int
+	Ctx       int
+	Eps       float32
+	RopeBase  float32
 	RopeScale float32
 
 	QDim  int
@@ -58,15 +58,30 @@ type Model struct {
 	Out     *gguf.Tensor
 	Layers  []Layer
 
-	outNorm  []float32
-	invFreq  []float32
-	Path     string
+	outNorm   []float32
+	invFreq   []float32
+	Path      string
+	LowMemory bool
 
 	mu sync.Mutex
 }
 
+// LoadOptions controls how a model is loaded into memory.
+type LoadOptions struct {
+	// LowMemory keeps F16/BF16 weights in their packed form instead of
+	// expanding them to F32. This roughly halves RAM use for F16 models at the
+	// cost of slower matvec reads.
+	LowMemory bool
+}
+
 // Load parses a GGUF file and builds an inference model.
 func Load(path string) (*Model, error) {
+	return LoadWithOptions(path, LoadOptions{})
+}
+
+// LoadWithOptions parses a GGUF file and builds an inference model with the
+// given memory/speed trade-off.
+func LoadWithOptions(path string, opt LoadOptions) (*Model, error) {
 	g, err := gguf.Open(path)
 	if err != nil {
 		return nil, err
@@ -75,7 +90,7 @@ func Load(path string) (*Model, error) {
 	if err != nil {
 		return nil, err
 	}
-	m := &Model{Tok: tok, GGUF: g, Path: path, Cfg: Config{}}
+	m := &Model{Tok: tok, GGUF: g, Path: path, Cfg: Config{}, LowMemory: opt.LowMemory}
 
 	arch, _ := g.String("general.architecture")
 	if arch == "" {
@@ -182,7 +197,9 @@ func Load(path string) (*Model, error) {
 	if err := m.validate(); err != nil {
 		return nil, err
 	}
-	g.ConvertHalfToF32()
+	if !opt.LowMemory {
+		g.ConvertHalfToF32()
+	}
 	return m, nil
 }
 
