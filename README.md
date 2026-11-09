@@ -85,7 +85,7 @@ folder to your user `PATH`. Open a new terminal afterwards.
 To pass options, run the script block directly:
 
 ```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.3.0 -InstallDir C:\tools\teacat -NoPath
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1))) -Version v0.3.1 -InstallDir C:\tools\teacat -NoPath
 ```
 
 ### Linux / macOS
@@ -169,6 +169,22 @@ Models are stored in `~/.teacat` on every platform. Set `TEACAT_HOME` to use a
 different directory.
 
 The local API listens on `http://127.0.0.1:11434` on every platform.
+
+## Performance
+
+TeaCat runs inference on the CPU with a from-scratch Go engine. Model size and
+memory bandwidth matter more than core count:
+
+- **0.5B–1.5B instruct models** — comfortable interactive chat on a laptop.
+- **3B–8B models** — usable, but an 8B Q4 model typically produces a few tokens
+  per second on a modern laptop CPU.
+- **GPU** — TeaCat detects GPUs (`teacat info`) but does **not** run tensor math
+  on them yet. Inference is CPU-only in this build.
+
+By default TeaCat uses the number of **physical** CPU cores, which is usually
+faster than logical/SMT threads for memory-bound matvec work. Override with
+`--threads N` or `TEACAT_THREADS=N`. If RAM is tight, TeaCat automatically loads
+packed weights instead of expanding F16/BF16 tensors to F32.
 
 ## CLI
 

@@ -11,7 +11,7 @@
     irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1 | iex
 
 .EXAMPLE
-    .\install.ps1 -Version v0.3.0 -InstallDir "$env:USERPROFILE\bin"
+    .\install.ps1 -Version v0.3.1 -InstallDir "$env:USERPROFILE\bin"
 
 .EXAMPLE
     .\install.ps1 -NoPath -Force

@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 // GPU describes one graphics adapter found on the machine.
@@ -18,15 +19,16 @@ type GPU struct {
 
 // Info is a snapshot of the host hardware.
 type Info struct {
-	OS           string `json:"os"`
-	Arch         string `json:"arch"`
-	CPU          string `json:"cpu"`
-	Cores        int    `json:"cores"`
-	GOMAXPROCS   int    `json:"gomaxprocs"`
-	RAMTotal     uint64 `json:"ram_total"`
-	RAMAvailable uint64 `json:"ram_available"`
-	GPUs         []GPU  `json:"gpus,omitempty"`
-	Backend      string `json:"backend"`
+	OS            string `json:"os"`
+	Arch          string `json:"arch"`
+	CPU           string `json:"cpu"`
+	Cores         int    `json:"cores"`
+	PhysicalCores int    `json:"physical_cores"`
+	GOMAXPROCS    int    `json:"gomaxprocs"`
+	RAMTotal      uint64 `json:"ram_total"`
+	RAMAvailable  uint64 `json:"ram_available"`
+	GPUs          []GPU  `json:"gpus,omitempty"`
+	Backend       string `json:"backend"`
 }
 
 // Detect returns the current hardware snapshot. CPU/GPU lookups may spawn a
@@ -36,15 +38,16 @@ func Detect() Info {
 	total, avail := platformRAM()
 	gpus := platformGPU()
 	info := Info{
-		OS:           runtime.GOOS,
-		Arch:         runtime.GOARCH,
-		CPU:          platformCPU(),
-		Cores:        runtime.NumCPU(),
-		GOMAXPROCS:   runtime.GOMAXPROCS(0),
-		RAMTotal:     total,
-		RAMAvailable: avail,
-		GPUs:         gpus,
-		Backend:      "CPU (pure Go)",
+		OS:            runtime.GOOS,
+		Arch:          runtime.GOARCH,
+		CPU:           platformCPU(),
+		Cores:         runtime.NumCPU(),
+		PhysicalCores: PhysicalCores(),
+		GOMAXPROCS:    runtime.GOMAXPROCS(0),
+		RAMTotal:      total,
+		RAMAvailable:  avail,
+		GPUs:          gpus,
+		Backend:       "CPU (pure Go)",
 	}
 	if info.CPU == "" {
 		info.CPU = runtime.GOARCH + " CPU"
@@ -52,10 +55,27 @@ func Detect() Info {
 	return info
 }
 
+var (
+	physOnce  sync.Once
+	physCores int
+)
+
+// PhysicalCores returns the number of physical CPU cores. Using physical
+// rather than logical (SMT) cores is often faster for memory-bound matvec work.
+func PhysicalCores() int {
+	physOnce.Do(func() {
+		physCores = platformPhysicalCores()
+		if physCores <= 0 || physCores > runtime.NumCPU() {
+			physCores = runtime.NumCPU()
+		}
+	})
+	return physCores
+}
+
 // Summary is a one-line description used in server startup logs.
 func (i Info) Summary() string {
 	var b strings.Builder
-	fmt.Fprintf(&b, "%s, %d cores", i.CPU, i.Cores)
+	fmt.Fprintf(&b, "%s, %d cores / %d threads", i.CPU, i.PhysicalCores, i.Cores)
 	if i.RAMTotal > 0 {
 		fmt.Fprintf(&b, ", %s RAM", HumanBytes(i.RAMTotal))
 	}

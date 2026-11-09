@@ -9,7 +9,7 @@ const (
 	// Author is the creator/maintainer.
 	Author = "Tyxen"
 	// Version is the release version.
-	Version = "0.3.0"
+	Version = "0.3.1"
 	// Repo is the canonical source repository.
 	Repo = "https://github.com/tyxteacat/teacat"
 	// Website is the canonical landing page.

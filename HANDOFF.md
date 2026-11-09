@@ -39,7 +39,7 @@ sensible text on real models.
 | Go module | `github.com/tyxteacat/teacat` |
 | Binary | `teacat.exe` (Windows) / `teacat` |
 | Model store | `~/.teacat` (env override: `TEACAT_HOME`) |
-| HTTP User-Agent | `TeaCat/0.3.0 (+https://github.com/tyxteacat/teacat)` |
+| HTTP User-Agent | `TeaCat/0.3.1 (+https://github.com/tyxteacat/teacat)` |
 | License | MIT |
 
 Brand constants live in `internal/brand/brand.go`. URLs also appear in:
@@ -63,7 +63,7 @@ alternative**, **GGUF**, **OpenAI-compatible**.
 - Local git identity: `Tyxen <tyxteacat@users.noreply.github.com>`
 - **Published:** `tyxteacat/teacat` is a public repository and `main` has been
   pushed.
-- **Release:** `v0.3.0` is published with six prebuilt binaries (Windows,
+- **Release:** `v0.3.1` is published with six prebuilt binaries (Windows,
   Linux, macOS × amd64, arm64) plus `checksums.txt`. `v0.1.0` remains
   available. The Windows installer fetches the latest release.
 - **Dashboard:** the embedded local UI is live at `http://127.0.0.1:11434/`
@@ -183,7 +183,7 @@ go build ./...
 go vet ./...
 go test ./...
 .\build.ps1                 # produces teacat.exe
-.\teacat.exe version        # TeaCat 0.3.0
+.\teacat.exe version        # TeaCat 0.3.1
 ```
 
 On Linux/macOS use `./build.sh` instead, which produces `./teacat`.

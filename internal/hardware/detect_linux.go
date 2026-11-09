@@ -54,6 +54,42 @@ func platformCPU() string {
 	return ""
 }
 
+func platformPhysicalCores() int {
+	f, err := os.Open("/proc/cpuinfo")
+	if err != nil {
+		return 0
+	}
+	defer f.Close()
+	seen := map[string]bool{}
+	physID, coreID := "", ""
+	flush := func() {
+		if physID != "" && coreID != "" {
+			seen[physID+"/"+coreID] = true
+		}
+		physID, coreID = "", ""
+	}
+	sc := bufio.NewScanner(f)
+	for sc.Scan() {
+		line := sc.Text()
+		if strings.TrimSpace(line) == "" {
+			flush()
+			continue
+		}
+		parts := strings.SplitN(line, ":", 2)
+		if len(parts) != 2 {
+			continue
+		}
+		switch strings.TrimSpace(parts[0]) {
+		case "physical id":
+			physID = strings.TrimSpace(parts[1])
+		case "core id":
+			coreID = strings.TrimSpace(parts[1])
+		}
+	}
+	flush()
+	return len(seen)
+}
+
 func platformGPU() []GPU {
 	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
 	defer cancel()

@@ -6,6 +6,7 @@ import (
 	"context"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -44,6 +45,12 @@ func platformCPU() string {
 		return name
 	}
 	return os.Getenv("PROCESSOR_IDENTIFIER")
+}
+
+func platformPhysicalCores() int {
+	out := runPowerShell(`(Get-CimInstance Win32_Processor | Measure-Object -Property NumberOfCores -Sum).Sum`)
+	n, _ := strconv.Atoi(strings.TrimSpace(out))
+	return n
 }
 
 func platformGPU() []GPU {

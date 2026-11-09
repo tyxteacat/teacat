@@ -24,6 +24,11 @@ func platformCPU() string {
 	return run("sysctl", "-n", "machdep.cpu.brand_string")
 }
 
+func platformPhysicalCores() int {
+	n, _ := strconv.Atoi(run("sysctl", "-n", "hw.physicalcpu"))
+	return n
+}
+
 func platformGPU() []GPU {
 	out := run("system_profiler", "SPDisplaysDataType")
 	var gpus []GPU

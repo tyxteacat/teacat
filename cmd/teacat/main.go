@@ -139,6 +139,9 @@ func setThreads(n int) int {
 }
 
 func defaultThreads() int {
+	if n := hardware.PhysicalCores(); n > 0 {
+		return n
+	}
 	return runtime.GOMAXPROCS(0)
 }
 
@@ -315,8 +318,8 @@ func cmdInfo(args []string) error {
 	fmt.Printf("TeaCat %s - hardware\n\n", version)
 	fmt.Printf("OS         %s/%s\n", info.OS, info.Arch)
 	fmt.Printf("CPU        %s\n", info.CPU)
-	fmt.Printf("Cores      %d logical\n", info.Cores)
-	fmt.Printf("Threads    %d (Go runtime)\n", info.GOMAXPROCS)
+	fmt.Printf("Cores      %d physical / %d logical\n", info.PhysicalCores, info.Cores)
+	fmt.Printf("Threads    %d (Go runtime), %d recommended\n", info.GOMAXPROCS, info.PhysicalCores)
 	if info.RAMAvailable > 0 {
 		fmt.Printf("Memory     %s total, %s available\n", hardware.HumanBytes(info.RAMTotal), hardware.HumanBytes(info.RAMAvailable))
 	} else {
