@@ -105,6 +105,7 @@ Examples:
   teacat info                        # see what hardware TeaCat can use
   teacat serve
   teacat create mymodel:latest -f .\model.gguf
+  teacat create .\model.gguf
 
 Pull only downloads a model. To talk to it, use "teacat chat <model>" for the
 browser interface, or "teacat run <model>" for the terminal.
@@ -337,6 +338,7 @@ func cmdInfo(args []string) error {
 		}
 	}
 	fmt.Printf("Backend    %s\n", info.Backend)
+	fmt.Printf("Store      %s\n", st.Home)
 
 	fmt.Println("\nInstalled models:")
 	if len(rows) == 0 {
@@ -581,22 +583,39 @@ func cmdCreate(args []string) error {
 	file := fs.String("f", "", "path to a .gguf file")
 	fs.Parse(flexibleArgs(args, map[string]bool{"-f": true, "--f": true, "-file": true, "--file": true}))
 	if fs.NArg() < 1 {
-		return fmt.Errorf("usage: teacat create <name> -f model.gguf")
-	}
-	if *file == "" {
-		return fmt.Errorf("missing -f <model.gguf>")
+		return fmt.Errorf("usage: teacat create <name> -f model.gguf\n       teacat create model.gguf")
 	}
 	ref := fs.Arg(0)
+	if *file == "" {
+		// Allow "teacat create C:\path\model.gguf" as a shortcut.
+		if strings.EqualFold(filepath.Ext(ref), ".gguf") {
+			*file = ref
+			ref = strings.TrimSuffix(filepath.Base(ref), filepath.Ext(ref))
+		} else {
+			return fmt.Errorf("missing -f <model.gguf>")
+		}
+	}
+	if abs, err := filepath.Abs(*file); err == nil {
+		*file = abs
+	}
+	if _, err := os.Stat(*file); err != nil {
+		return fmt.Errorf("model file not found: %s\n   check the path first:  Test-Path \"%s\"\n   or import by copying:  teacat pull \"C:\\path\\to\\model.gguf\"", *file, *file)
+	}
+	if !strings.EqualFold(filepath.Ext(*file), ".gguf") {
+		fmt.Fprintf(os.Stderr, "warning: %s does not end in .gguf; TeaCat only supports GGUF files\n", *file)
+	}
 	st, err := openStore()
 	if err != nil {
 		return err
 	}
 	fmt.Printf("importing %s as %s\n", *file, ref)
+	fmt.Printf("copying into %s\n", st.BlobsDir())
 	m, err := st.ImportFile(firstPart(ref), tagPart(ref), *file, "file")
 	if err != nil {
 		return err
 	}
 	fmt.Printf("success: %s (%s)\n", m.Ref(), humanSize(m.Size))
+	fmt.Printf("start chatting: teacat run %s\n", m.Ref())
 	return nil
 }
 

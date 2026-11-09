@@ -179,7 +179,7 @@ The local API listens on `http://127.0.0.1:11434` on every platform.
 | `teacat chat [model] [--port 11434]` | Open the modern browser chat, with the model selected |
 | `teacat pull <name[:tag]>` | Download from the Ollama registry (download only) |
 | `teacat pull --url <gguf-url> [--name name:tag]` | Download a direct GGUF URL |
-| `teacat create <name[:tag]> -f model.gguf` | Import a local GGUF file |
+| `teacat create <name[:tag]> -f model.gguf` | Import a local GGUF file (also `teacat create model.gguf`) |
 | `teacat list` | List installed models |
 | `teacat info [--json]` | Show CPU, RAM, GPU, threads and whether models fit in RAM |
 | `teacat show <model>` | Show architecture, context, template |
