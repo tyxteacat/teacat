@@ -4,277 +4,674 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <title>TeaCat by Tyxen — Run Local AI Models on Your Own Machine</title>
-  <meta name="description" content="TeaCat is a free, open-source local LLM runtime created by Tyxen. Run GGUF models on Windows, Linux or macOS with an Ollama-compatible API and an OpenAI-compatible endpoint. Built from scratch in Go.">
-  <meta name="keywords" content="TeaCat, TeaCat Tyxen, Tyxen, TeaCat AI, Tea Cat, local LLM, run local models, Ollama alternative, GGUF, OpenAI compatible, Go LLM runtime, offline AI">
+  <title>TeaCat by Tyxen — Local AI, Steeped in Go</title>
+  <meta name="description" content="TeaCat is a free, open-source local LLM runtime by Tyxen. Run GGUF models on your own CPU with a transformer engine written from scratch in Go. Ollama and OpenAI APIs, an embedded dashboard, zero cloud.">
+  <meta name="keywords" content="TeaCat, TeaCat Tyxen, Tyxen, TeaCat AI, Tea Cat, local LLM, run local models, Ollama alternative, GGUF, OpenAI compatible, Go LLM runtime, offline AI, local AI dashboard">
   <meta name="author" content="Tyxen">
   <meta name="robots" content="index, follow">
+  <meta name="theme-color" content="#0a0907">
   <link rel="canonical" href="https://tyxteacat.github.io/teacat/">
 
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="TeaCat">
-  <meta property="og:title" content="TeaCat by Tyxen — Local AI, brewed on your machine">
-  <meta property="og:description" content="A local LLM runtime written from scratch in Go. Pull GGUF models, chat offline, and use Ollama or OpenAI compatible APIs.">
+  <meta property="og:title" content="TeaCat by Tyxen — Local AI, Steeped in Go">
+  <meta property="og:description" content="Run GGUF language models on your own machine with a from-scratch Go engine, Ollama + OpenAI APIs, and a built-in dashboard. No cloud. No telemetry.">
   <meta property="og:url" content="https://tyxteacat.github.io/teacat/">
 
   <meta name="twitter:card" content="summary">
-  <meta name="twitter:title" content="TeaCat by Tyxen">
-  <meta name="twitter:description" content="Run local AI models with a from-scratch Go inference engine. Ollama and OpenAI compatible.">
+  <meta name="twitter:title" content="TeaCat by Tyxen — Local AI, Steeped in Go">
+  <meta name="twitter:description" content="A local LLM runtime written from scratch in Go. GGUF, Ollama + OpenAI APIs, embedded dashboard. Windows, Linux and macOS.">
 
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2314110f'/%3E%3Cpath d='M14 38h30v6a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12z' fill='%23e6b566'/%3E%3Cpath d='M44 41h4a7 7 0 0 1 0 14h-4' fill='none' stroke='%23e6b566' stroke-width='4'/%3E%3Cpath d='M20 20c0-4 4-4 4-8M30 20c0-4 4-4 4-8M40 20c0-4 4-4 4-8' stroke='%23f6efe3' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%2314110c'/%3E%3Cpath d='M15 29h34v7a17 17 0 0 1-17 17h0a17 17 0 0 1-17-17z' fill='%23e6b566'/%3E%3Cpath d='M16 29 13 15l11 7M48 29l3-14-11 7' fill='%23e6b566'/%3E%3Cpath d='M50 33h2a7 7 0 0 1 0 14h-3' fill='none' stroke='%23e6b566' stroke-width='3'/%3E%3Ccircle cx='24' cy='37' r='1.8' fill='%231a1309'/%3E%3Ccircle cx='40' cy='37' r='1.8' fill='%231a1309'/%3E%3Cpath d='M20 46c2 2 6 2 8 0' fill='none' stroke='%231a1309' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E">
 
-  <style>
-    :root {
-      --bg: #100d0b;
-      --panel: #1a1512;
-      --panel-2: #221b16;
-      --text: #f3ece1;
-      --muted: #b7a998;
-      --accent: #e6b566;
-      --accent-2: #8fd0b4;
-      --line: #33291f;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-      --sans: "Segoe UI", system-ui, -apple-system, Helvetica, Arial, sans-serif;
-    }
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      margin: 0;
-      background: radial-gradient(1200px 600px at 70% -10%, #2a2016 0%, var(--bg) 55%) fixed;
-      color: var(--text);
-      font-family: var(--sans);
-      line-height: 1.65;
-    }
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
-    .wrap { max-width: 1040px; margin: 0 auto; padding: 0 24px; }
-
-    header {
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 22px 0; border-bottom: 1px solid var(--line);
-    }
-    .brand { display: flex; align-items: center; gap: 12px; font-weight: 700; letter-spacing: .2px; }
-    .brand svg { width: 38px; height: 38px; }
-    .brand span small { display: block; color: var(--muted); font-size: 12px; font-weight: 400; }
-    nav { display: flex; gap: 20px; font-size: 14px; }
-    nav a { color: var(--muted); }
-    nav a:hover { color: var(--text); }
-
-    .hero { padding: 76px 0 56px; display: grid; grid-template-columns: 1.15fr .85fr; gap: 48px; align-items: center; }
-    .kicker { color: var(--accent-2); font-size: 13px; letter-spacing: 2.5px; text-transform: uppercase; margin-bottom: 14px; }
-    h1 { font-size: clamp(42px, 6vw, 68px); line-height: 1.02; margin: 0 0 18px; letter-spacing: -1.5px; }
-    h1 .tea { color: var(--accent); }
-    .lede { font-size: 18px; color: var(--muted); max-width: 560px; margin: 0 0 28px; }
-    .lede strong { color: var(--text); }
-    .cta { display: flex; gap: 14px; flex-wrap: wrap; }
-    .btn {
-      display: inline-block; padding: 12px 22px; border-radius: 9px;
-      font-weight: 600; font-size: 15px; border: 1px solid var(--line);
-    }
-    .btn.primary { background: var(--accent); color: #201608; border-color: var(--accent); }
-    .btn.primary:hover { background: #f0c47c; text-decoration: none; }
-    .btn.ghost:hover { border-color: var(--accent); text-decoration: none; }
-
-    .term {
-      background: #0b0908; border: 1px solid var(--line); border-radius: 14px;
-      overflow: hidden; box-shadow: 0 24px 60px rgba(0,0,0,.45);
-    }
-    .term-bar { display: flex; gap: 7px; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-    .dot { width: 10px; height: 10px; border-radius: 50%; background: #3a2e22; }
-    .dot.a { background: #d97a5b; } .dot.b { background: #d9b45b; } .dot.c { background: #79b58a; }
-    .term pre { margin: 0; padding: 18px 20px; font-family: var(--mono); font-size: 13.5px; line-height: 1.9; color: #e9dcc8; overflow-x: auto; }
-    .term .p { color: var(--accent-2); }
-    .term .c { color: #8f8070; }
-
-    section { padding: 64px 0; border-top: 1px solid var(--line); }
-    h2 { font-size: 30px; margin: 0 0 10px; letter-spacing: -.5px; }
-    .sub { color: var(--muted); margin: 0 0 36px; max-width: 700px; }
-
-    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
-    .card {
-      background: linear-gradient(180deg, var(--panel-2), var(--panel));
-      border: 1px solid var(--line); border-radius: 14px; padding: 22px;
-    }
-    .card h3 { margin: 0 0 8px; font-size: 17px; }
-    .card p { margin: 0; color: var(--muted); font-size: 14.5px; }
-    .ico { font-size: 20px; margin-bottom: 12px; display: block; }
-
-    .steps { counter-reset: step; display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
-    .step { position: relative; padding: 22px 22px 22px 64px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; }
-    .step::before {
-      counter-increment: step; content: counter(step);
-      position: absolute; left: 20px; top: 20px; width: 30px; height: 30px;
-      display: grid; place-items: center; border-radius: 50%;
-      background: rgba(230,181,102,.14); color: var(--accent); font-weight: 700; font-size: 14px;
-    }
-    .step h3 { margin: 0 0 6px; font-size: 16px; }
-    .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
-
-    .api-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-    .code { background: #0b0908; border: 1px solid var(--line); border-radius: 12px; padding: 18px; overflow-x: auto; }
-    .code pre { margin: 0; font-family: var(--mono); font-size: 12.5px; line-height: 1.75; color: #e9dcc8; }
-    .code .k { color: var(--accent-2); }
-    .code .s { color: #d7a97a; }
-    .code h4 { margin: 0 0 12px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
-
-    .author { display: grid; grid-template-columns: 1fr 1fr; gap: 36px; align-items: center; }
-    .author-card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 28px; }
-    .author-card .name { font-size: 22px; font-weight: 700; }
-    .author-card .role { color: var(--accent); font-size: 13px; letter-spacing: 1.5px; text-transform: uppercase; }
-
-    footer { border-top: 1px solid var(--line); padding: 34px 0 46px; color: var(--muted); font-size: 14px; }
-    footer .row { display: flex; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-    .tags { margin-top: 12px; font-size: 12px; color: #8f8070; }
-
-    @media (max-width: 860px) {
-      .hero, .author { grid-template-columns: 1fr; }
-      .grid { grid-template-columns: 1fr 1fr; }
-    }
-    @media (max-width: 600px) {
-      nav { display: none; }
-      .grid, .steps, .api-grid { grid-template-columns: 1fr; }
-      section { padding: 46px 0; }
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300..700;1,9..144,300..700&family=JetBrains+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/site.css">
+  <script>document.documentElement.classList.add("js");</script>
 </head>
 <body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="scroll-progress" id="scrollProgress"></div>
 
-<header class="wrap">
-  <a class="brand" href="/teacat/" aria-label="TeaCat home">
-    <svg viewBox="0 0 64 64" aria-hidden="true">
-      <rect width="64" height="64" rx="14" fill="#1a1512"/>
-      <path d="M14 38h30v6a12 12 0 0 1-12 12H26a12 12 0 0 1-12-12z" fill="#e6b566"/>
-      <path d="M44 41h4a7 7 0 0 1 0 14h-4" fill="none" stroke="#e6b566" stroke-width="4"/>
-      <path d="M20 20c0-4 4-4 4-8M30 20c0-4 4-4 4-8M40 20c0-4 4-4 4-8" stroke="#f6efe3" stroke-width="3" stroke-linecap="round"/>
-    </svg>
-    <span>TeaCat<small>by Tyxen</small></span>
-  </a>
-  <nav>
-    <a href="#features">Features</a>
-    <a href="#start">Get started</a>
-    <a href="#api">API</a>
-    <a href="#author">Author</a>
-    <a href="https://github.com/tyxteacat/teacat">GitHub</a>
-  </nav>
+<svg class="sprite" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <defs>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7dda9"/>
+      <stop offset=".55" stop-color="#e6b566"/>
+      <stop offset="1" stop-color="#bf8739"/>
+    </linearGradient>
+    <linearGradient id="jadeGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c1ecdd"/>
+      <stop offset="1" stop-color="#74b99d"/>
+    </linearGradient>
+  </defs>
+
+  <symbol id="i-mark" viewBox="0 0 48 48">
+    <rect x="1" y="1" width="46" height="46" rx="12" fill="#15110c" stroke="rgba(230,181,102,.32)"/>
+    <path d="M14 23.5 11.2 12l10.4 6.2M34 23.5 36.8 12 26.4 18.2" fill="url(#goldGrad)"/>
+    <path d="M14 22.5h20v6.8A10.7 10.7 0 0 1 23.3 40h-1.6A10.7 10.7 0 0 1 11 29.3v-6.8Z" fill="url(#goldGrad)"/>
+    <path d="M34 25.5h2.2a4.6 4.6 0 0 1 0 9.2h-3" fill="none" stroke="url(#goldGrad)" stroke-width="2.1" stroke-linecap="round"/>
+    <path d="M9.5 41.5h25" stroke="#e6b566" stroke-width="1.4" stroke-linecap="round" opacity=".45"/>
+    <circle cx="19.5" cy="29.5" r="1.15" fill="#1a1309"/>
+    <circle cx="28.5" cy="29.5" r="1.15" fill="#1a1309"/>
+    <path d="M22.3 33.1h3.4l-1.7 1.8z" fill="#1a1309"/>
+    <path d="M12.5 32.5H8.8M35.5 32.5h3.7" stroke="#1a1309" stroke-width="1.1" stroke-linecap="round" opacity=".6"/>
+    <path d="M21 10c0-2.1 2.2-2.1 2.2-4.2M27 10c0-2.1 2.2-2.1 2.2-4.2" stroke="url(#jadeGrad)" stroke-width="1.3" stroke-linecap="round"/>
+  </symbol>
+
+  <symbol id="i-download" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3v12m0 0 4.2-4.2M12 15l-4.2-4.2M4 20h16"/>
+  </symbol>
+  <symbol id="i-github" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56v-2.17c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.03 1.75 2.69 1.24 3.35.95.1-.74.4-1.24.72-1.53-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.4-5.26 5.69.41.35.77 1.05.77 2.12v3.14c0 .31.21.68.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/>
+  </symbol>
+  <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m4 12.5 5 5L20 6.5"/>
+  </symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 3l7 3v6c0 4.4-3 7.4-7 9-4-1.6-7-4.6-7-9V6Z"/>
+    <path d="m8.8 12 2.2 2.2 4.2-4.4"/>
+  </symbol>
+  <symbol id="i-bolt" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M13 2 4 14h6l-1 8 9-12h-6Z"/>
+  </symbol>
+  <symbol id="i-cpu" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="7" y="7" width="10" height="10" rx="2"/>
+    <rect x="10.2" y="10.2" width="3.6" height="3.6" rx=".8"/>
+    <path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/>
+  </symbol>
+  <symbol id="i-cube" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.8 20 7.2v9.6L12 21.2 4 16.8V7.2Z"/>
+    <path d="M4 7.2 12 11.6l8-4.4M12 11.6v9.6"/>
+  </symbol>
+  <symbol id="i-token" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="3" y="3" width="6.5" height="6.5" rx="1.4"/>
+    <rect x="14.5" y="14.5" width="6.5" height="6.5" rx="1.4"/>
+    <path d="M9.5 6.2h5M12 6.2v5.3M15.8 12h-2.3a1.5 1.5 0 0 0-1.5 1.5v1"/>
+  </symbol>
+  <symbol id="i-wave" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2.5 13.5c2-4.5 4-4.5 6 0s4 4.5 6 0 4-4.5 7 0"/>
+    <circle cx="20.5" cy="8" r="1.4" fill="currentColor" stroke="none"/>
+  </symbol>
+  <symbol id="i-api" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15"/>
+  </symbol>
+  <symbol id="i-dash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+    <path d="M8.5 4v16M11.8 8.5h6M11.8 12h6M11.8 15.5h3.5"/>
+  </symbol>
+  <symbol id="i-store" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <ellipse cx="12" cy="5.5" rx="8" ry="2.8"/>
+    <path d="M4 5.5v6.2c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8V5.5M4 11.7v6.3c0 1.5 3.6 2.8 8 2.8s8-1.3 8-2.8v-6.3"/>
+  </symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="9" width="11" height="11" rx="2"/>
+    <path d="M6 15H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v1"/>
+  </symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 12h15m0 0-5.2-5.2M19 12l-5.2 5.2"/>
+  </symbol>
+  <symbol id="i-windows" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M3 5.4 10.7 4.3v7.2H3Zm8.9-1.2L21 2.8v8.7h-9.1ZM3 12.5h7.7v7.2L3 18.6Zm8.9 0H21v8.7l-9.1-1.4Z"/>
+  </symbol>
+  <symbol id="i-linux" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M12 2.8c-2.4 0-3.7 2-3.7 4.4 0 1.7.6 2.7.6 4.2 0 2.1-2.6 4.4-2.6 7.1 0 1.5 1 2.3 2.2 2.3h7c1.2 0 2.2-.8 2.2-2.3 0-2.7-2.6-5-2.6-7.1 0-1.5.6-2.5.6-4.2 0-2.4-1.3-4.4-3.7-4.4Z"/>
+    <circle cx="10.3" cy="7.5" r=".8" fill="currentColor" stroke="none"/>
+    <circle cx="13.7" cy="7.5" r=".8" fill="currentColor" stroke="none"/>
+    <path d="m11 9.4 1 1.1 1-1.1"/>
+    <path d="M8.5 18.5h7"/>
+  </symbol>
+  <symbol id="i-apple" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M16.4 12.7c0-2.4 2-3.6 2.1-3.7-1.1-1.7-2.9-1.9-3.5-2-1.5-.2-2.9.9-3.6.9-.8 0-1.9-.9-3.1-.9-1.6 0-3.1.9-3.9 2.4-1.7 2.9-.4 7.1 1.2 9.5.8 1.2 1.7 2.4 3 2.3 1.2 0 1.6-.8 3.1-.8 1.5 0 1.9.8 3.1.8 1.3 0 2.1-1.2 2.9-2.3.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.6-1-2.6-3.5ZM14.1 5.2c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.9-1 3 1.1.1 2.1-.6 2.8-1.4Z"/>
+  </symbol>
+  <symbol id="i-terminal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="2.5" y="4" width="19" height="16" rx="2.5"/>
+    <path d="m7 9 3 3-3 3M13.5 15H17"/>
+  </symbol>
+  <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M20.5 3.5C10 3.5 4 8.8 4 17.2c8.4 0 13.7-6 16.5-13.7Z"/>
+    <path d="M6 18C8.6 13.8 12 10.4 16.5 8.2"/>
+  </symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="m12 3 8.5 4.5L12 12 3.5 7.5Z"/>
+    <path d="m3.5 12 8.5 4.5 8.5-4.5M3.5 16.5 12 21l8.5-4.5"/>
+  </symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M12 2c.6 5.2 2.8 7.4 8 8-5.2.6-7.4 2.8-8 8-.6-5.2-2.8-7.4-8-8 5.2-.6 7.4-2.8 8-8Z"/>
+  </symbol>
+</svg>
+
+<header class="site-header" id="siteHeader">
+  <div class="nav-inner">
+    <a class="brand" href="#top" aria-label="TeaCat home">
+      <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-mark"/></svg>
+      <span class="word"><b>Tea<span>Cat</span></b><small>by Tyxen</small></span>
+    </a>
+    <nav class="site-nav" id="siteNav" aria-label="Main">
+      <a href="#features">Stack</a>
+      <a href="#dashboard">Dashboard</a>
+      <a href="#how">How it works</a>
+      <a href="#api">API</a>
+      <a href="#performance">Performance</a>
+      <a href="#download">Download</a>
+    </nav>
+    <div class="nav-actions">
+      <a class="nav-gh" href="https://github.com/tyxteacat/teacat" target="_blank" rel="noreferrer">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg><span>GitHub</span>
+      </a>
+      <a class="btn btn-primary btn-sm" href="#download">Download</a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu" aria-expanded="false" aria-controls="siteNav"><span></span></button>
+    </div>
+  </div>
 </header>
 
-<main class="wrap">
-  <section class="hero" style="border-top:none;">
-    <div>
-      <div class="kicker">Local LLM runtime</div>
-      <h1>Local AI,<br>brewed on your <span class="tea">machine</span>.</h1>
-      <p class="lede">
-        <strong>TeaCat</strong> is an open-source runtime by <strong>Tyxen</strong> that
-        downloads GGUF models and runs them offline with its own transformer
-        engine, written from scratch in Go. No cloud, no telemetry, no
-        llama.cpp underneath.
+<main id="main">
+  <section class="hero wrap" id="top">
+    <div class="hero-copy reveal">
+      <span class="eyebrow"><span class="pulse"></span>v0.3.0 · open source · MIT</span>
+      <h1>Local intelligence.<br><em>Steeped</em> in Go.</h1>
+      <p class="hero-lede">
+        <strong>TeaCat</strong> runs GGUF language models on your own CPU with a transformer
+        engine written from scratch in Go. Two drop-in APIs, a built-in dashboard,
+        and not a single byte leaving your machine.
       </p>
-      <div class="cta">
-        <a class="btn primary" href="https://github.com/tyxteacat/teacat">Get TeaCat on GitHub</a>
-        <a class="btn ghost" href="#start">Read the docs</a>
+      <div class="hero-cta">
+        <a class="btn btn-primary" href="#download">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>
+          Download TeaCat
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/tyxteacat/teacat" target="_blank" rel="noreferrer">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg>
+          View source
+        </a>
+      </div>
+      <ul class="hero-points">
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>No cloud</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>No telemetry</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>No llama.cpp</li>
+        <li><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg>Single binary</li>
+      </ul>
+    </div>
+
+    <div class="hero-stage reveal" style="--d:120ms">
+      <svg class="orbit" viewBox="0 0 640 640" aria-hidden="true">
+        <circle cx="320" cy="320" r="300" fill="none" stroke="rgba(245,239,227,.055)"/>
+        <circle cx="320" cy="320" r="236" fill="none" stroke="rgba(230,181,102,.14)" stroke-dasharray="2 9"/>
+        <circle cx="320" cy="320" r="174" fill="none" stroke="rgba(245,239,227,.05)"/>
+        <circle cx="320" cy="320" r="110" fill="none" stroke="rgba(143,208,180,.12)" stroke-dasharray="1 7"/>
+        <circle cx="320" cy="84" r="4" fill="#e6b566"/>
+        <circle cx="536" cy="452" r="3" fill="#8fd0b4"/>
+        <circle cx="104" cy="400" r="2.5" fill="#e6b566" opacity=".7"/>
+        <g fill="none" stroke="rgba(230,181,102,.2)" stroke-width="1.2">
+          <path d="M308 60c8-10 20-10 28 0-8 12-20 12-28 0Z"/>
+          <path d="M560 380c10-6 18 0 20 10-12 4-19-1-20-10Z"/>
+          <path d="M74 300c-8-8-5-19 6-23 6 11 2 19-6 23Z"/>
+        </g>
+      </svg>
+      <div class="stage-glow"></div>
+      <div class="stage-art">
+        <div class="float local">
+          <span class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg></span>
+          <div><b>100% local</b>0 bytes leave your machine</div>
+        </div>
+        <div class="term">
+          <div class="term-bar">
+            <span class="dot a"></span><span class="dot b"></span><span class="dot c"></span>
+            <span class="title">teacat — powershell</span>
+          </div>
+          <div class="term-body">
+            <div class="row"><span class="p">PS&gt;</span> <span class="cmd">teacat pull qwen2.5:0.5b</span></div>
+            <div class="row mut">  pulling manifest · verifying sha256</div>
+            <div class="row ok">  success: qwen2.5:0.5b (379.4 MB)</div>
+            <div class="row">&nbsp;</div>
+            <div class="row"><span class="p">PS&gt;</span> <span class="cmd">teacat ui</span></div>
+            <div class="row out">  TeaCat 0.3.0 · http://127.0.0.1:11434</div>
+            <div class="row out">  dashboard opened in your browser</div>
+            <div class="row">&nbsp;</div>
+            <div class="row"><span class="p">PS&gt;</span> <span class="cmd">teacat run qwen2.5:0.5b "Hello!"</span></div>
+            <div class="row out">  Hello! How can I help you today?</div>
+            <div class="row"><span class="p">PS&gt;</span> <span class="cursor"></span></div>
+          </div>
+        </div>
+        <div class="float speed">
+          <span class="fi"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg></span>
+          <div><b>CPU-first</b>scalar Go engine · no GPU</div>
+          <svg class="spark" width="54" height="22" viewBox="0 0 54 22" aria-hidden="true">
+            <path d="M2 17l7-6 6 3 7-9 6 5 7-7 6 4 6-5" fill="none" stroke="#e6b566" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
       </div>
     </div>
-    <div class="term" aria-label="Terminal example">
-      <div class="term-bar"><span class="dot a"></span><span class="dot b"></span><span class="dot c"></span></div>
-      <pre><span class="p">$</span> teacat pull qwen2.5:0.5b
-<span class="c">success: qwen2.5:0.5b (379.4 MB)</span>
+  </section>
 
-<span class="p">$</span> teacat run qwen2.5:0.5b "Hello!"
-<span class="c">Hello! How can I help you today?</span>
+  <div class="stat-band wrap reveal">
+    <div class="stat"><strong>6</strong><span>prebuilt platform targets</span></div>
+    <div class="stat"><strong>14</strong><span>GGUF quantization formats</span></div>
+    <div class="stat"><strong>2</strong><span>drop-in API protocols</span></div>
+    <div class="stat"><strong>0</strong><span>bytes sent to the cloud</span></div>
+  </div>
 
-<span class="p">$</span> teacat serve
-<span class="c">TeaCat 0.2.0 listening on :11434</span></pre>
+  <section class="section wrap" id="features">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">The stack</span>
+      <h2>Everything between the file<br>and the <em>first token</em>.</h2>
+      <p class="section-sub">TeaCat implements the whole pipeline itself: GGUF parsing, quantization kernels, tokenizers, attention, sampling, storage and HTTP. No llama.cpp, no cgo, no black boxes.</p>
+    </div>
+
+    <div class="bento">
+      <article class="card stack-card span-7 reveal">
+        <div class="stack-visual" aria-label="Diagram: GGUF file through parser, transformer layers, logits, sampler, to the next token">
+          <svg viewBox="0 0 640 250" role="img">
+            <defs>
+              <linearGradient id="stackGold" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#f3d199"/><stop offset="1" stop-color="#c08a3d"/>
+              </linearGradient>
+              <linearGradient id="stackJade" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#c1ecdd"/><stop offset="1" stop-color="#74b99d"/>
+              </linearGradient>
+            </defs>
+            <g font-family="JetBrains Mono, monospace" font-size="9.5" fill="#8f8170">
+              <text x="12" y="30">1 · open</text>
+              <text x="160" y="30">2 · parse</text>
+              <text x="270" y="30">3 · forward</text>
+              <text x="448" y="30">4 · sample</text>
+            </g>
+
+            <g>
+              <path d="M18 76h52l16 16v78a6 6 0 0 1-6 6H18a6 6 0 0 1-6-6V82a6 6 0 0 1 6-6Z" fill="#19150f" stroke="rgba(245,239,227,.18)" stroke-width="1.3"/>
+              <path d="M70 76v16h16" fill="none" stroke="rgba(245,239,227,.18)" stroke-width="1.3"/>
+              <text x="24" y="116" fill="#f3d199" font-family="Manrope, sans-serif" font-size="13" font-weight="700">GGUF</text>
+              <text x="24" y="131" fill="#8f8170" font-family="JetBrains Mono, monospace" font-size="8.5">v2 / v3</text>
+              <path d="M24 144h30M24 153h22M24 162h26" stroke="rgba(245,239,227,.18)" stroke-width="2" stroke-linecap="round"/>
+            </g>
+
+            <path class="flow-dash" d="M92 136h36" stroke="#e6b566" stroke-width="1.4" fill="none" opacity=".7"/>
+            <path d="m123 132 5 4-5 4" fill="none" stroke="#e6b566" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <g>
+              <path d="M160 136l26-40 42 0 26 40-26 40h-42Z" fill="rgba(230,181,102,.06)" stroke="rgba(230,181,102,.4)" stroke-width="1.3"/>
+              <text x="189" y="133" fill="#f3d199" font-family="Manrope, sans-serif" font-size="11" font-weight="700">parse</text>
+              <text x="183" y="147" fill="#8f8170" font-family="JetBrains Mono, monospace" font-size="7.5">metadata</text>
+            </g>
+
+            <path class="flow-dash" d="M254 136h28" stroke="#e6b566" stroke-width="1.4" fill="none" opacity=".7"/>
+            <path d="m277 132 5 4-5 4" fill="none" stroke="#e6b566" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <g>
+              <rect x="290" y="78" width="150" height="26" rx="6" fill="#17130e" stroke="rgba(245,239,227,.14)"/>
+              <text x="303" y="95" fill="#cfc2ae" font-family="JetBrains Mono, monospace" font-size="8.5">RMSNorm</text>
+              <rect x="298" y="110" width="150" height="26" rx="6" fill="#1b1610" stroke="rgba(230,181,102,.28)"/>
+              <text x="311" y="127" fill="#f3d199" font-family="JetBrains Mono, monospace" font-size="8.5">GQA + RoPE + KV</text>
+              <rect x="290" y="142" width="150" height="26" rx="6" fill="#17130e" stroke="rgba(245,239,227,.14)"/>
+              <text x="303" y="159" fill="#cfc2ae" font-family="JetBrains Mono, monospace" font-size="8.5">SwiGLU FFN</text>
+              <text x="290" y="188" fill="#6f6355" font-family="JetBrains Mono, monospace" font-size="8">× block_count</text>
+            </g>
+
+            <path class="flow-dash" d="M448 136h28" stroke="#e6b566" stroke-width="1.4" fill="none" opacity=".7"/>
+            <path d="m471 132 5 4-5 4" fill="none" stroke="#e6b566" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+
+            <g>
+              <path d="M492 168V96M506 168v-46M520 168v-32M534 168v-58M548 168v-20" stroke="url(#stackGold)" stroke-width="7" stroke-linecap="round"/>
+              <text x="496" y="188" fill="#6f6355" font-family="JetBrains Mono, monospace" font-size="8">logits</text>
+            </g>
+
+            <path class="flow-dash" d="M560 136h22" stroke="#8fd0b4" stroke-width="1.4" fill="none" opacity=".8"/>
+            <circle cx="602" cy="136" r="21" fill="rgba(143,208,180,.07)" stroke="rgba(143,208,180,.4)" stroke-width="1.3"/>
+            <path d="M602 124c.4 4.6 2.4 6.6 7 7-4.6.4-6.6 2.4-7 7-.4-4.6-2.4-6.6-7-7 4.6-.4 6.6-2.4 7-7Z" fill="url(#stackJade)"/>
+            <text x="580" y="176" fill="#8fd0b4" font-family="JetBrains Mono, monospace" font-size="8">next token</text>
+          </svg>
+        </div>
+        <div class="stack-copy">
+          <h3>From bytes to tokens, in one binary</h3>
+          <p>Load a GGUF file, parse its metadata, expand F16 weights once, run quantized matvecs through every layer, then sample the next token. Every step is plain, readable Go in this repository.</p>
+        </div>
+      </article>
+
+      <article class="card span-5 reveal" style="--d:80ms">
+        <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cpu"/></svg></span>
+        <h3>From-scratch engine</h3>
+        <p>RMSNorm, RoPE, grouped-query attention with a KV cache, SwiGLU feed-forward layers and a sampler. Written directly against Go slices — no cgo, no bindings.</p>
+        <div class="tags"><span class="tag">GQA</span><span class="tag">KV cache</span><span class="tag">RoPE</span><span class="tag">SwiGLU</span></div>
+        <div class="mini-code">
+          <div><span class="prompt">$</span> go build ./...</div>
+          <div><span class="ok">✓</span> windows · linux · darwin</div>
+        </div>
+      </article>
+
+      <article class="card span-6 reveal" style="--d:60ms">
+        <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cube"/></svg></span>
+        <h3>GGUF, ready for real models</h3>
+        <p>Reads GGUF v2 and v3 with alignment handling and a complete tensor table. F32, F16 and BF16 are supported alongside the quantized formats most local models ship with.</p>
+        <div class="tags"><span class="tag">Q4_0</span><span class="tag">Q5_0</span><span class="tag">Q8_0</span><span class="tag">Q2–Q6_K</span><span class="tag">IQ4_NL</span><span class="tag">+8 more</span></div>
+      </article>
+
+      <article class="card span-6 reveal" style="--d:120ms">
+        <span class="icon jade"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-token"/></svg></span>
+        <h3>Tokenizers that match the model</h3>
+        <p>SentencePiece/unigram and byte-level BPE are rebuilt from GGUF metadata. Chat templates for ChatML, Llama 3, Llama 2, Phi-3, Gemma and Command-R are detected automatically.</p>
+        <div class="tags"><span class="tag">SPM</span><span class="tag">byte-BPE</span><span class="tag">ChatML</span><span class="tag">Llama 3</span></div>
+      </article>
+
+      <article class="card span-4 reveal" style="--d:60ms">
+        <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-wave"/></svg></span>
+        <h3>Sampling you control</h3>
+        <p>Temperature, top-k, top-p, min-p, repetition penalty, seeds and greedy mode. Tune it in the CLI, the API or the dashboard.</p>
+      </article>
+
+      <article class="card span-4 reveal" style="--d:120ms">
+        <span class="icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-store"/></svg></span>
+        <h3>A real model store</h3>
+        <p>Content-addressed blobs and JSON manifests under <code>~/.teacat</code>. Pull from the Ollama registry with SHA-256 verification, import a local GGUF, or fetch a direct URL.</p>
+      </article>
+
+      <article class="card span-4 reveal" style="--d:180ms">
+        <span class="icon jade"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-api"/></svg></span>
+        <h3>Two APIs, one port</h3>
+        <p>Ollama-compatible endpoints and OpenAI-compatible chat completions, both streaming. Point an existing client at <code>127.0.0.1:11434</code> and it just works.</p>
+      </article>
     </div>
   </section>
 
-  <section id="features">
-    <h2>Everything is yours to read</h2>
-    <p class="sub">TeaCat implements the whole stack: file format, quantization, tokenizers, attention, sampling, storage and HTTP APIs.</p>
-    <div class="grid">
-      <div class="card"><span class="ico">🧠</span><h3>From-scratch engine</h3><p>RMSNorm, RoPE, grouped-query attention with a KV cache, SwiGLU feed-forward layers and a sampler. Pure Go, no cgo.</p></div>
-      <div class="card"><span class="ico">📦</span><h3>GGUF + quantization</h3><p>Reads GGUF v2/v3 and supports F32, F16, BF16, Q8_0, Q4_0/1, Q5_0/1 and the K-quant family including Q4_K and Q6_K.</p></div>
-      <div class="card"><span class="ico">🔌</span><h3>Two APIs, one server</h3><p>Drop-in Ollama endpoints and OpenAI-compatible chat completions with streaming, so existing clients just work.</p></div>
-      <div class="card"><span class="ico">⬇️</span><h3>Model manager</h3><p>Pull from the Ollama registry with SHA-256 verification, import a local GGUF, or download a direct URL. Stored under ~/.teacat.</p></div>
-      <div class="card"><span class="ico">💬</span><h3>Chat templates</h3><p>ChatML, Llama 3/2, Phi-3, Gemma and Command-R are detected automatically from model metadata.</p></div>
-      <div class="card"><span class="ico">🖥️</span><h3>Local dashboard</h3><p>A built-in web UI at <code>127.0.0.1:11434</code> for streaming chat, pulling models, tuning sampling and managing your library. Embedded, offline, no extra install.</p></div>
-      <div class="card"><span class="ico">🪶</span><h3>Small and portable</h3><p>A single binary on Windows, Linux and macOS. No runtime, no service mesh, no account.</p></div>
+  <section class="section wrap" id="dashboard">
+    <div class="showcase">
+      <div class="reveal">
+        <div class="section-head" style="margin-bottom:0">
+          <span class="section-eyebrow">The dashboard</span>
+          <h2>A local UI that<br>ships <em>inside</em> the binary.</h2>
+          <p class="section-sub">Run <code style="color:var(--gold-2);font-size:14px">teacat ui</code> and the browser opens. Chat, pull models, delete them, tune sampling and copy API endpoints — all against localhost.</p>
+        </div>
+        <ul class="check-list">
+          <li><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Streaming chat</b> with a stop button and live tokens/sec, parsed straight from the local NDJSON stream.</span></li>
+          <li><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Model library</b> with size, parameter count and quantization, plus one-click delete.</span></li>
+          <li><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Pull progress</b> for any Ollama-registry model, with checksum-verified blobs.</span></li>
+          <li><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Sampling controls</b> for system prompt, temperature, top-p, top-k and max tokens.</span></li>
+          <li><span class="ci"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-check"/></svg></span><span><b>Embedded and offline</b> — one HTML file compiled into Go, no CDN and no extra install.</span></li>
+        </ul>
+      </div>
+
+      <div class="browser reveal" style="--d:100ms" role="img" aria-label="TeaCat dashboard preview: a model sidebar, a chat with streaming haikus, sampling sliders and a message composer">
+        <div class="browser-bar">
+          <div class="lights"><i></i><i></i><i></i></div>
+          <div class="browser-url"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg>127.0.0.1:11434</div>
+        </div>
+        <div class="dash">
+          <aside class="dash-side">
+            <div class="dash-brand">
+              <svg viewBox="0 0 48 48" aria-hidden="true"><use href="#i-mark"/></svg>
+              TeaCat <em>v0.3.0</em>
+            </div>
+            <div class="dash-label">Models · 2</div>
+            <div class="dash-model active"><span>qwen2.5:0.5b</span><small>379 MB · Q5_0 mixed</small></div>
+            <div class="dash-model"><span>smollm2:135m</span><small>258 MB · F16</small></div>
+            <div class="dash-label">Pull a model</div>
+            <div class="dash-input">qwen2.5:0.5b <span>Pull</span></div>
+            <div class="dash-progress"><i></i></div>
+            <div class="dash-label">Generation</div>
+            <div class="dash-slider"><span>Temp</span><i><b style="width:35%"></b></i><em>0.7</em></div>
+            <div class="dash-slider"><span>Top-p</span><i><b style="width:90%"></b></i><em>0.9</em></div>
+            <div class="dash-slider"><span>Top-k</span><i><b style="width:40%"></b></i><em>40</em></div>
+          </aside>
+          <div class="dash-main">
+            <div class="dash-head">
+              <div><b>Chat</b><small>Talking to qwen2.5:0.5b</small></div>
+              <span class="dash-pill">streaming</span>
+            </div>
+            <div class="dash-msgs">
+              <div class="bubble user">Write a haiku about Go.</div>
+              <div class="bubble ai">Channels hum softly,<br>goroutines drift like steam —<br>one cup, many hands.<span class="caret"></span></div>
+              <div class="bubble user">Now one about local AI.</div>
+              <div class="bubble ai">No cloud, just your fans,<br>weights steep in silicon warmth —<br>the answer is yours.</div>
+            </div>
+            <div class="dash-stats">38 tokens · 14.3 tok/s · stop</div>
+            <div class="dash-composer">Send a message… <span><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg></span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <section id="start">
-    <h2>Brew your first model</h2>
-    <p class="sub">Prebuilt binaries for Windows, Linux and macOS (amd64 and arm64), or build from source with Go 1.22+.</p>
+  <section class="section wrap" id="how">
+    <div class="section-head center reveal">
+      <span class="section-eyebrow">How it works</span>
+      <h2>Four steps from download<br>to a <em>streaming answer</em>.</h2>
+      <p class="section-sub">No daemon, no container, no cloud round-trip. The same process downloads the model, loads the weights and generates tokens.</p>
+    </div>
     <div class="steps">
-      <div class="step"><h3>Build</h3><p><code>.\build.ps1</code> on Windows, <code>./build.sh</code> on Linux or macOS, or <code>go build -o teacat ./cmd/teacat</code>.</p></div>
-      <div class="step"><h3>Pull</h3><p><code>teacat pull qwen2.5:0.5b</code> fetches a quantized instruct model into <code>~/.teacat</code>.</p></div>
-      <div class="step"><h3>Chat</h3><p><code>teacat run qwen2.5:0.5b</code> starts a streaming terminal chat.</p></div>
-      <div class="step"><h3>Dashboard</h3><p><code>teacat ui</code> opens the local web UI at <code>http://127.0.0.1:11434</code>, with the APIs on the same port.</p></div>
+      <article class="step reveal">
+        <div class="step-num"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg></div>
+        <h3>Pull</h3>
+        <p>Fetch a model from the Ollama registry, a direct GGUF URL or a local file. Every blob is checked against its SHA-256 digest.</p>
+        <code>teacat pull qwen2.5:0.5b</code>
+      </article>
+      <article class="step reveal" style="--d:80ms">
+        <div class="step-num"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-cube"/></svg></div>
+        <h3>Load</h3>
+        <p>Read the GGUF header and tensor table, expand F16/BF16 weights once, and keep quantized tensors packed for fast matvecs.</p>
+        <code>gguf.Open → model.Load</code>
+      </article>
+      <article class="step reveal" style="--d:160ms">
+        <div class="step-num"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-layers"/></svg></div>
+        <h3>Prefill</h3>
+        <p>Tokenize the prompt with the model's own tokenizer and chat template, then run every prompt token through all layers to fill the KV cache.</p>
+        <code>prefill → KV cache</code>
+      </article>
+      <article class="step reveal" style="--d:240ms">
+        <div class="step-num"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-bolt"/></svg></div>
+        <h3>Stream</h3>
+        <p>Sample a token, feed it back through the network and emit text as UTF-8. The dashboard, CLI, Ollama and OpenAI clients all see it live.</p>
+        <code>NDJSON · SSE</code>
+      </article>
     </div>
   </section>
 
-  <section id="api">
-    <h2>Point your tools at it</h2>
-    <p class="sub">TeaCat speaks the same protocols as the tools you already use.</p>
+  <section class="section wrap" id="api">
+    <div class="section-head reveal">
+      <span class="section-eyebrow">Drop-in APIs</span>
+      <h2>Point your tools at it.<br>They will not <em>notice</em>.</h2>
+      <p class="section-sub">TeaCat speaks the same protocols as the tools you already use. Existing Ollama and OpenAI clients work against the same local port — any API key is accepted.</p>
+    </div>
     <div class="api-grid">
-      <div class="code">
-        <h4>Ollama API</h4>
-<pre>POST /api/chat
-{
+      <div class="code-card reveal">
+        <div class="code-head">
+          <span class="method">POST</span><span class="path">/api/chat</span>
+          <button class="copy-btn" data-copy='{"model":"qwen2.5:0.5b","messages":[{"role":"user","content":"Hello!"}],"stream":false}' aria-label="Copy Ollama request"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        </div>
+<pre>{
   <span class="k">"model"</span>: <span class="s">"qwen2.5:0.5b"</span>,
   <span class="k">"messages"</span>: [
     { <span class="k">"role"</span>: <span class="s">"user"</span>,
       <span class="k">"content"</span>: <span class="s">"Hello!"</span> }
   ],
-  <span class="k">"stream"</span>: false
+  <span class="k">"stream"</span>: <span class="n">false</span>
 }</pre>
       </div>
-      <div class="code">
-        <h4>OpenAI API</h4>
-<pre>POST /v1/chat/completions
-{
+      <div class="code-card reveal" style="--d:80ms">
+        <div class="code-head">
+          <span class="method">POST</span><span class="path">/v1/chat/completions</span>
+          <button class="copy-btn" data-copy='{"model":"qwen2.5:0.5b","messages":[{"role":"user","content":"Hello!"}],"stream":true}' aria-label="Copy OpenAI request"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        </div>
+<pre>{
   <span class="k">"model"</span>: <span class="s">"qwen2.5:0.5b"</span>,
   <span class="k">"messages"</span>: [
     { <span class="k">"role"</span>: <span class="s">"user"</span>,
       <span class="k">"content"</span>: <span class="s">"Hello!"</span> }
   ],
-  <span class="k">"stream"</span>: true
+  <span class="k">"stream"</span>: <span class="n">true</span>
 }</pre>
       </div>
     </div>
+    <div class="endpoints reveal">
+      <span class="endpoint"><b>GET</b> /api/tags</span>
+      <span class="endpoint"><b>POST</b> /api/generate</span>
+      <span class="endpoint"><b>POST</b> /api/show</span>
+      <span class="endpoint"><b>POST</b> /api/pull</span>
+      <span class="endpoint"><b>DELETE</b> /api/delete</span>
+      <span class="endpoint"><b>GET</b> /api/ps</span>
+      <span class="endpoint"><b>GET</b> /v1/models</span>
+      <span class="endpoint"><b>GET</b> /api/health</span>
+    </div>
   </section>
 
-  <section id="author">
-    <h2>Built by Tyxen</h2>
-    <div class="author">
-      <p class="sub" style="margin:0;">
-        TeaCat is designed and developed by <strong>Tyxen</strong>, who wanted local
-        language models to feel as simple as making tea: one command, everything
-        on your own machine, and a codebase small enough to read end to end.
-        The name <em>TeaCat</em> combines a warm cup with a curious cat — quiet,
-        local and always up for a chat.
-      </p>
-      <div class="author-card">
+  <section class="section wrap" id="performance">
+    <div class="perf-grid">
+      <div class="reveal">
+        <div class="section-head" style="margin-bottom:30px">
+          <span class="section-eyebrow">Performance</span>
+          <h2>Honest numbers,<br>not <em>promises</em>.</h2>
+          <p class="section-sub">TeaCat is a scalar, pure-Go CPU engine. It trades raw throughput for a stack you can read end to end. These are measured numbers, not targets.</p>
+        </div>
+        <div class="perf-bars">
+          <div class="perf-row">
+            <div class="perf-name">SmolLM2 135M <small>F16 expanded to F32</small></div>
+            <div class="perf-val">~14 tok/s</div>
+            <div class="perf-bar jade"><i style="--w:72%"></i></div>
+            <div class="perf-foot">prompt ~17 tok/s · 8 CPU threads</div>
+          </div>
+          <div class="perf-row">
+            <div class="perf-name">Qwen2.5 0.5B <small>Q5_0-mixed quantized</small></div>
+            <div class="perf-val">~2 tok/s</div>
+            <div class="perf-bar"><i style="--w:11%"></i></div>
+            <div class="perf-foot">prompt ~2.5 tok/s · same machine</div>
+          </div>
+        </div>
+      </div>
+      <aside class="perf-note reveal" style="--d:100ms">
+        <h3>Why it is slower than llama.cpp</h3>
+        <p>llama.cpp uses hand-tuned SIMD and assembly kernels. TeaCat uses straightforward Go loops so the entire engine stays auditable. For small models it is comfortable; for large ones it is a reading project, not a speed record.</p>
+        <ul class="spec-list">
+          <li><span>Test machine</span><b>Intel i5-8265U</b></li>
+          <li><span>Threads</span><b>8</b></li>
+          <li><span>Acceleration</span><b>CPU · scalar Go</b></li>
+          <li><span>GPU offload</span><b>not yet</b></li>
+        </ul>
+      </aside>
+    </div>
+  </section>
+  <section class="section wrap" id="download">
+    <div class="section-head center reveal">
+      <span class="section-eyebrow">Download</span>
+      <h2>One binary.<br><em>Six targets.</em></h2>
+      <p class="section-sub">Windows, Linux and macOS on both amd64 and arm64. No runtime, no installer service, no account. The Windows installer verifies the SHA-256 checksum and adds TeaCat to your PATH.</p>
+    </div>
+
+    <div class="os-grid">
+      <article class="os-card reveal">
+        <span class="os-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-windows"/></svg></span>
+        <h3>Windows</h3>
+        <p>x64 + ARM64 · PowerShell</p>
+        <a class="btn btn-ghost" href="https://github.com/tyxteacat/teacat/releases/latest/download/teacat-windows-amd64.exe">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>
+          Download .exe
+        </a>
+      </article>
+      <article class="os-card reveal" style="--d:80ms">
+        <span class="os-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-linux"/></svg></span>
+        <h3>Linux</h3>
+        <p>x64 + ARM64 · static binary</p>
+        <a class="btn btn-ghost" href="https://github.com/tyxteacat/teacat/releases/latest/download/teacat-linux-amd64">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>
+          Download binary
+        </a>
+      </article>
+      <article class="os-card reveal" style="--d:160ms">
+        <span class="os-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-apple"/></svg></span>
+        <h3>macOS</h3>
+        <p>Apple Silicon + Intel</p>
+        <a class="btn btn-ghost" href="https://github.com/tyxteacat/teacat/releases/latest/download/teacat-darwin-arm64">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-download"/></svg>
+          Download binary
+        </a>
+      </article>
+    </div>
+
+    <div class="install-grid">
+      <div class="cmd-card reveal">
+        <div class="cmd-head">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-terminal"/></svg>
+          PowerShell · one line
+          <button class="copy-btn" data-copy="irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1 | iex" aria-label="Copy PowerShell installer command"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        </div>
+        <div class="cmd-body"><code><span class="ps1">PS&gt;</span> irm https://raw.githubusercontent.com/tyxteacat/teacat/main/install.ps1 | iex</code></div>
+      </div>
+      <div class="cmd-card reveal" style="--d:80ms">
+        <div class="cmd-head">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-terminal"/></svg>
+          Linux / macOS
+          <button class="copy-btn" data-copy="curl -L -o teacat https://github.com/tyxteacat/teacat/releases/latest/download/teacat-linux-amd64 && chmod +x teacat && sudo mv teacat /usr/local/bin/" aria-label="Copy Linux install command"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-copy"/></svg></button>
+        </div>
+        <div class="cmd-body"><code><span class="ps1">$</span> curl -L -o teacat https://github.com/tyxteacat/teacat/releases/latest/download/teacat-linux-amd64
+<span class="ps1">$</span> chmod +x teacat &amp;&amp; sudo mv teacat /usr/local/bin/</code></div>
+      </div>
+    </div>
+    <p class="download-note">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg>
+      Every release ships <span class="mono">checksums.txt</span>. On Apple Silicon use <span class="mono">teacat-darwin-arm64</span>; on Intel use <span class="mono">teacat-darwin-amd64</span>. Build from source with Go 1.22+ and <span class="mono">./build.sh</span> or <span class="mono">.\build.ps1</span>. <a class="inline-link" href="https://github.com/tyxteacat/teacat/releases/latest">All releases</a>
+    </p>
+  </section>
+
+  <section class="section wrap" id="author">
+    <div class="author-box reveal">
+      <svg class="author-mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-mark"/></svg>
+      <div>
         <div class="role">Creator</div>
-        <div class="name">Tyxen</div>
-        <p style="color:var(--muted);margin:8px 0 0;">
-          Developer of TeaCat. Author of the from-scratch GGUF inference engine,
-          CLI, model manager and local API server.
-        </p>
-        <p style="margin:16px 0 0;"><a href="https://github.com/tyxteacat">github.com/tyxteacat</a></p>
+        <h2>Built by Tyxen.</h2>
+        <blockquote>
+          TeaCat started with a simple idea: local models should feel like making tea —
+          one command, everything on your own machine, and a codebase small enough to
+          read end to end. <em>The name is a warm cup plus a curious cat.</em> No cloud,
+          no telemetry, no black boxes.
+        </blockquote>
+        <div class="author-links">
+          <a href="https://github.com/tyxteacat" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-github"/></svg>github.com/tyxteacat</a>
+          <a href="https://github.com/tyxteacat/teacat" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-arrow"/></svg>tyxteacat/teacat</a>
+          <a href="https://github.com/tyxteacat/teacat/blob/main/LICENSE" target="_blank" rel="noreferrer"><svg viewBox="0 0 24 24" aria-hidden="true"><use href="#i-shield"/></svg>MIT licensed</a>
+        </div>
       </div>
     </div>
   </section>
 </main>
 
-<footer>
+<footer class="site-footer">
   <div class="wrap">
-    <div class="row">
-      <div>TeaCat — local LLM runtime by Tyxen. MIT licensed.</div>
-      <div><a href="https://github.com/tyxteacat/teacat">Source</a> · <a href="https://github.com/tyxteacat/teacat/blob/main/README.md">Documentation</a> · <a href="https://github.com/tyxteacat/teacat/issues">Issues</a></div>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top" aria-label="TeaCat home">
+          <svg class="mark" viewBox="0 0 48 48" aria-hidden="true"><use href="#i-mark"/></svg>
+          <span class="word"><b>Tea<span>Cat</span></b><small>by Tyxen</small></span>
+        </a>
+        <p>A free, open-source local LLM runtime with its own inference engine. Windows, Linux and macOS. No cloud, no telemetry, MIT licensed.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Product</h4>
+        <a href="#features">The stack</a>
+        <a href="#dashboard">Dashboard</a>
+        <a href="#performance">Performance</a>
+        <a href="#download">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Resources</h4>
+        <a href="https://github.com/tyxteacat/teacat/blob/main/README.md">Documentation</a>
+        <a href="#how">How it works</a>
+        <a href="#api">API reference</a>
+        <a href="https://github.com/tyxteacat/teacat/releases">Releases</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://github.com/tyxteacat/teacat">GitHub</a>
+        <a href="https://github.com/tyxteacat/teacat/issues">Issues</a>
+        <a href="https://github.com/tyxteacat">Tyxen</a>
+        <a href="https://tyxteacat.github.io/teacat/">Website</a>
+      </div>
     </div>
-    <div class="tags">TeaCat · TeaCat Tyxen · Tyxen · local LLM · GGUF · Ollama alternative · OpenAI-compatible · Go</div>
+    <div class="footer-bottom">
+      <div>© <span id="year">2026</span> Tyxen · TeaCat is MIT licensed.</div>
+      <div class="search-terms">TeaCat · TeaCat Tyxen · Tea Cat AI · local LLM · GGUF · Ollama alternative · OpenAI-compatible · Go</div>
+    </div>
   </div>
 </footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script type="application/ld+json">
 {
@@ -282,17 +679,29 @@
   "@type": "SoftwareApplication",
   "name": "TeaCat",
   "alternateName": ["TeaCat Tyxen", "TeaCat by Tyxen", "Tea Cat AI"],
+  "softwareVersion": "0.3.0",
   "applicationCategory": "DeveloperApplication",
   "operatingSystem": "Windows, Linux, macOS",
-  "description": "TeaCat is a free, open-source local LLM runtime created by Tyxen. It runs GGUF models on your own machine and exposes Ollama-compatible and OpenAI-compatible APIs.",
+  "description": "TeaCat is a free, open-source local LLM runtime created by Tyxen. It runs GGUF models on your own CPU with a transformer engine written from scratch in Go, and exposes Ollama-compatible and OpenAI-compatible APIs plus an embedded web dashboard.",
   "url": "https://tyxteacat.github.io/teacat/",
   "codeRepository": "https://github.com/tyxteacat/teacat",
+  "downloadUrl": "https://github.com/tyxteacat/teacat/releases/latest",
   "license": "https://opensource.org/licenses/MIT",
   "author": { "@type": "Person", "name": "Tyxen", "url": "https://github.com/tyxteacat" },
   "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
   "programmingLanguage": "Go",
-  "keywords": "TeaCat, TeaCat Tyxen, Tyxen, local LLM, GGUF, Ollama alternative, OpenAI compatible"
+  "keywords": "TeaCat, TeaCat Tyxen, Tyxen, local LLM, GGUF, Ollama alternative, OpenAI compatible, local AI dashboard",
+  "featureList": [
+    "From-scratch transformer inference engine in Go",
+    "GGUF v2/v3 loader with quantized kernels",
+    "Ollama-compatible and OpenAI-compatible APIs",
+    "Embedded local web dashboard",
+    "Content-addressed model store with SHA-256 verification",
+    "Windows, Linux and macOS binaries"
+  ]
 }
 </script>
+
+<script src="assets/site.js" defer></script>
 </body>
 </html>
